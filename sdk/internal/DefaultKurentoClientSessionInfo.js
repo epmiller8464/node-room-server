@@ -2,18 +2,9 @@
  * Created by ghostmac on 1/12/16.
  */
 
-var debug = require('debug')('node-room-server:publisherendpoint')
+var debug = require('debug')('node-room-server:DefaultKurentoClientSessionInfo')
 var inherits = require('inherits');
-var kurento = require('kurento-client');
 var KurentoClientSessionInfo = require('../api/KurentoClientSessionInfo');
-var RoomError = require('../exception/RoomException');
-
-function noop(error, result) {
-    if (error) console.trace(error);
-
-    return result
-}
-
 
 function DefaultKurentoClientSessionInfo(participantId, roomName) {
     var self = this

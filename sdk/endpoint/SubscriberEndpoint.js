@@ -73,47 +73,31 @@ SubscriberEndpoint.prototype.setPublisher = function (publisher) {
     var self = this
     self._publisher = publisher
 }
+
 SubscriberEndpoint.prototype.mute = function (muteType) {
     var self = this
-    var sink = self._passThru;
-    if (self._elements) {
-        var sinkId = self._elementIds.pop();
-        if (!self._elements[sinkId])
-            throw new RoomError("This endpoint (" + self.getEndpointName() + ") has no media self._element with id " + sinkId + " (should've been connected to the internal ep)",
-                RoomError.Code.MEDIA_ENDPOINT_ERROR_CODE);
-        sink = self._elements[sinkId];
-    } else {
-
-        console.log("Will mute connection of WebRTC and PassThrough (no other elems)");
+    if (!self._publisher) {
+        console.log("Will mute connection of WebRTC and Subscriber (no other elems)");
+        throw new RoomError("Muting endpoint (" + self.getEndpointName() + ") encoutered an error", RoomError.Code.MEDIA_WEBRTC_ENDPOINT_ERROR_CODE);
     }
 
     switch (muteType) {
         case MutedMediaType.ALL:
-            self.internalSinkDisconnect(self.getEndpoint(), sink);
+            self._publisher.disconnectFrom(self.getEndpoint())
             break;
         case MutedMediaType.AUDIO:
-            self.internalSinkDisconnect(self.getEndpoint(), sink, MutedMediaType.AUDIO);
+            self._publisher.disconnectFrom(self.getEndpoint(), MutedMediaType.AUDIO)
             break;
         case MutedMediaType.VIDEO:
-            self.internalSinkDisconnect(self.getEndpoint(), sink, MutedMediaType.VIDEO);
+            self._publisher.disconnectFrom(self.getEndpoint(), MutedMediaType.VIDEO)
             break;
     }
     self.resolveCurrentMuteType(muteType);
 }
+
 SubscriberEndpoint.prototype.unmute = function () {
     var self = this
-    var sink = self._passThru;
-
-    if (self._elements) {
-        var sinkId = self._elementIds.pop();
-        if (!self._elements[sinkId])
-            throw new RoomError("This endpoint (" + self.getEndpointName() + ") has no media self._element with id " + sinkId + " (should've been connected to the internal ep)",
-                RoomError.Code.MEDIA_ENDPOINT_ERROR_CODE);
-        sink = self._elements[sinkId];
-    } else {
-        console.log("Will unmute connection of WebRTC and PassThrough (no other elems)");
-    }
-    self.internalSinkConnect(self.getEndpoint(), sink);
+    self._publisher.connect(self.getEndpoint())
     self.setMuteType(null);
 }
 

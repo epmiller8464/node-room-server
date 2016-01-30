@@ -7,6 +7,7 @@ var kurento = require('kurento-client');
 var MutedMediaType = require('../api/MutedMediaType');
 var RoomError = require('../exception/RoomException');
 var MediaEndpoint = require('./MediaEndpoint');
+var SdpType = require('./SdpType');
 var EndpointConfig = {web: false, owner: null, endpointName: '', pipeline: null, log: null}
 
 function noop(error, result) {
@@ -170,10 +171,10 @@ PublisherEndpoint.prototype.publish = function (sdpType,
     }
     var sdpResponse = null
     switch (sdpType.toUpperCase()) {
-        case 'ANSWER':
+        case SdpType.ANSWER:
             sdpResponse = self.processAnswer(sdpString)
             break
-        case 'OFFER':
+        case SdpType.OFFER:
             sdpResponse = self.processOffer(sdpString)
             break
         default:

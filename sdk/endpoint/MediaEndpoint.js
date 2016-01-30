@@ -1,47 +1,39 @@
 /**
  * Created by ghostmac on 1/12/16.
  */
+var debug = require('debug')('node-room-server:mediaendpoint')
+
 var kurento = require('kurento-client');
 var MutedMediaType = require('../api/MutedMediaType');
 var RoomError = require('../exception/RoomException');
-//var argv = minimist(process.argv.slice(2), {
-//    default: {
-//        as_uri: 'http://192.168.0.6:8181/',
-//        ws_uri: 'ws://192.168.0.105:8888/kurento'
-//    }
-//});
 
 function noop(error, result) {
     if (error) console.trace(error);
 
     return result
 }
-//callback = (callback || noop).bind(this)
 
-var EndpointConfig = {web: false, owner: null, endpointName: '', pipeline: null, log: null}
+
+var EndpointConfig = {web: false, owner: null, endpointName: null, pipeline: null, log: null}
 
 /**
  * Constructor to set the owner, the endpoint's name and the media pipeline.
- * @param web {boolean}
- * @param owner
- * @param endpointName
- * @param pipeline
- * @param log
+ * @param {EndpointConfig} endpointConfig
+ * @constructor
  */
-
-function MediaEndpoint(opts) {
-    opts = opts || {}
+function MediaEndpoint(endpointConfig) {
+    endpointConfig = endpointConfig || {}
     var self = this;
 
-    self._log = opts.log || null;
+    self._log = endpointConfig.log || null;
     //private boolean web = false;
-    self._web = opts.web || false;
+    self._web = endpointConfig.web || false;
     //private String endpointName;
-    self._endpointName = opts.endpointName || null;
+    self._endpointName = endpointConfig.endpointName || null;
     //private MediaPipeline pipeline = null;
-    self._pipeline = opts.pipeline || null;
+    self._pipeline = endpointConfig.pipeline || null;
     //private Participant owner;
-    self._owner = opts.owner || null;
+    self._owner = endpointConfig.owner || null;
     //private WebRtcEndpoint webEndpoint = null;
     self._webRtcEndpoint = null; //WebRtcEndpoint
     //private  endpoint = null;
@@ -207,10 +199,10 @@ MediaEndpoint.prototype.registerElemErrListener = function (element) {
     var listener = this._owner.sendMediaError;
     return element.on('Error', listener)
 };
-
 /**
  *
- * @param element {MediaElement}
+ * @param element
+ * @param subscription
  */
 MediaEndpoint.prototype.unregisterElementErrListener = function (element, subscription) {
 //element.addListener
@@ -224,8 +216,9 @@ MediaEndpoint.prototype.unregisterElementErrListener = function (element, subscr
  * @param offer {String}
  * @returns {*|external:Promise}
  */
-MediaEndpoint.prototype.processOffer = function (offer) {
+MediaEndpoint.prototype.processOffer = function (offer, cb) {
     var self = this;
+    cb = (cb || noop).bind(self)
 
     if (self.isWeb()) {
 
@@ -233,29 +226,32 @@ MediaEndpoint.prototype.processOffer = function (offer) {
             throw new RoomError('Cannot process offer when WebRtcEndpoint is null (ep: ' + self._endpointName + ')', RoomError.Code.MEDIA_WEBRTC_ENDPOINT_ERROR_CODE);
 
         //return self._webRtcEndpoint.processOffer(offer);
-        return self._webRtcEndpoint.processOffer(offer, function (err, sdpAnswer) {
-            if (err) {
-                console.log(err);
-
-            } else {
-                console.log(sdpAnswer);
-            }
-            return sdpAnswer
-        })
+        return self._webRtcEndpoint.processOffer(offer, cb);
+        //return self._webRtcEndpoint.processOffer(offer, function (err, sdpAnswer) {
+        //    if (err) {
+        //        console.log(err);
+        //
+        //    } else {
+        //        console.log(sdpAnswer);
+        //    }
+        //    return sdpAnswer
+        //})
     }
     else {
         if (!self._endpoint)
             throw new RoomError('Cannot process offer when RtpEndpoint is null (ep: ' + self._endpointName + ')', RoomError.Code.MEDIA_RTP_ENDPOINT_ERROR_CODE);
 
-        return self._endpoint.processOffer(offer, function (err, sdpAnswer) {
-            if (err) {
-                console.log(err);
+        return self._endpoint.processOffer(offer, cb);
 
-            } else {
-                console.log(sdpAnswer);
-            }
-            return sdpAnswer
-        })
+        //return self._endpoint.processOffer(offer, function (err, sdpAnswer) {
+        //    if (err) {
+        //        console.log(err);
+        //
+        //    } else {
+        //        console.log(sdpAnswer);
+        //    }
+        //    return sdpAnswer
+        //})
     }
 };
 
@@ -263,65 +259,71 @@ MediaEndpoint.prototype.processOffer = function (offer) {
  *
  * @returns {*|external:Promise}
  */
-MediaEndpoint.prototype.generateOffer = function () {
+MediaEndpoint.prototype.generateOffer = function (cb) {
     console.log('generate offer');
     var self = this
+    cb = (cb || noop).bind(self)
 
     if (self.isWeb()) {
         if (!self._webRtcEndpoint)
             throw new RoomError('Cannot process offer when WebRtcEndpoint is null (ep: ' + self._endpointName + ')', RoomError.Code.MEDIA_RTP_ENDPOINT_ERROR_CODE);
 
-        return self._webRtcEndpoint.generateOffer();
+        return self._webRtcEndpoint.generateOffer(cb);
         //return self._webRtcEndpoint.generateOffer(cb)
     } else {
         if (!self._endpoint)
             throw new RoomError('Cannot process offer when RtpEndpoint is null (ep: ' + self._endpointName + ')', RoomError.Code.MEDIA_RTP_ENDPOINT_ERROR_CODE);
 
-        return self._endpoint.generateOffer();
+        return self._endpoint.generateOffer(cb);
         //return this._endpoint.generateOffer(cb);
     }
 };
 
-MediaEndpoint.prototype.processAnswer = function (answer) {
+MediaEndpoint.prototype.processAnswer = function (answer, cb) {
     var self = this
-    
+    cb = (cb || noop).bind(self)
+
     if (self.isWeb()) {
         if (!self._webRtcEndpoint)
             throw new RoomError('Cannot process offer when WebRtcEndpoint is null (ep: ' + self._endpointName + ')', RoomError.Code.MEDIA_WEBRTC_ENDPOINT_ERROR_CODE);
 
-        return self._webRtcEndpoint.processAnswer(answer, function (err) {
-            if (err) {
-                console.log(err);
-
-            } else {
-                console.log(answer);
-            }
-        })
+        return self._webRtcEndpoint.processAnswer(answer, cb);
+        //return self._webRtcEndpoint.processAnswer(answer, function (err) {
+        //    if (err) {
+        //        console.log(err);
+        //
+        //    } else {
+        //        console.log(answer);
+        //    }
+        //})
     } else {
         if (!self._endpoint)
             throw new RoomError('Cannot process offer when RtpEndpoint is null (ep: ' + self._endpointName + ')', RoomError.Code.MEDIA_RTP_ENDPOINT_ERROR_CODE);
 
-        return self._endpoint.processAnswer(answer, function (err) {
-            if (err) {
-                console.log(err);
+        return self._endpoint.processAnswer(answer, cb);
 
-            } else {
-                console.log(answer);
-            }
-        });
+        //return self._endpoint.processAnswer(answer, function (err) {
+        //    if (err) {
+        //        console.log(err);
+        //
+        //    } else {
+        //        console.log(answer);
+        //    }
+        //});
         //return self._endpoint.generateOffer(cb);
     }
 };
 
 
 /**
- * Add a new {@link IceCandidate} received gathered by the remote peer of
- * this {@link WebRtcEndpoint}.
  *
- * @param candidate the remote candidate
+ * @param candidate
+ * @param cb
  */
-MediaEndpoint.prototype.addIceCandidate = function (candidate) {
+MediaEndpoint.prototype.addIceCandidate = function (candidate, cb) {
     var self = this
+    cb = (cb || noop).bind(self)
+
     if (!self.isWeb()) {
         throw new RoomError("Operation not supported", RoomError.Code.MEDIA_NOT_A_WEB_ENDPOINT_ERROR_CODE);
     }
@@ -329,7 +331,7 @@ MediaEndpoint.prototype.addIceCandidate = function (candidate) {
     if (!self._webRtcEndpoint) {
         self._candidates.push(candidate)
     } else {
-        self.internalAddIceCandidate(candidate)
+        self.internalAddIceCandidate(candidate, cb)
     }
 };
 
@@ -351,31 +353,27 @@ MediaEndpoint.prototype.registerOnIceCandidateEventListener = function () {
 
 };
 
-
 /**
- * Init the gathering of ICE candidates.
- * It must be called after SdpEndpoint::generateOffer or
- * SdpEndpoint::processOffer
  *
- * @alias module:elements.WebRtcEndpoint.gatherCandidates
- *
- * @param {module:elements.WebRtcEndpoint~gatherCandidatesCallback} [callback]
- *
- * @return {external:Promise}
+ * @param cb
+ * @returns {*|external:Promise}
  */
-MediaEndpoint.prototype.gatherCandidates = function (callback) {
+MediaEndpoint.prototype.gatherCandidates = function (cb) {
     var self = this
+    cb = (cb || noop).bind(self)
     if (!self.isWeb())
-        return;
+        return cb();
 
     if (!self._webRtcEndpoint)
         throw new RoomError('Cannot process offer when WebRtcEndpoint is null (ep: ' + self._endpointName + ')', RoomError.Code.MEDIA_WEBRTC_ENDPOINT_ERROR_CODE);
 
-    return self._webRtcEndpoint.gatherCandidates(callback)
+    return self._webRtcEndpoint.gatherCandidates(cb)
 };
 
-MediaEndpoint.prototype.internalAddIceCandidate = function (candidate) {
+MediaEndpoint.prototype.internalAddIceCandidate = function (candidate, cb) {
     var self = this;
+    cb = (cb || noop).bind(self)
+
     if (!self._webRtcEndpoint)
         throw new RoomError('Cant add existing ICE candidates to null WebRtcEndpoint (ep: ' + self._endpointName + ')', RoomError.Code.MEDIA_WEBRTC_ENDPOINT_ERROR_CODE);
 
@@ -386,6 +384,7 @@ MediaEndpoint.prototype.internalAddIceCandidate = function (candidate) {
             console.log(err);
             throw new RoomError('error:' + err + ',EP: %s ' + self._endpointName + ')', RoomError.Code.MEDIA_WEBRTC_ENDPOINT_ERROR_CODE);
         }
+        return cb()
     });
 };
 

@@ -32,12 +32,47 @@ function SubscriberEndpoint(endpointConfig) {
 
 inherits(SubscriberEndpoint, MediaEndpoint);
 
-SubscriberEndpoint.prototype.subscribe = function(sdpOffer,publisher){}
+SubscriberEndpoint.prototype.subscribe = function (sdpOffer, publisher, cb) {
+    var self = this
+    cb = (cb || noop).bind(self)
 
-SubscriberEndpoint.prototype.isConnectedToPublisher = function(){}
-SubscriberEndpoint.prototype.setConnectedToPublisher = function(connectedToPublisher){}
-SubscriberEndpoint.prototype.getPublisher = function(){}
-SubscriberEndpoint.prototype.setPublisher = function(publisher){}
+    self.super_.registerOnIceCandidateEventListener.call(this)
+    //will yield a promise
+    var sdpAnswer = null;
+    self.processOffer(sdpOffer, function (err, sdpAnswer) {
+        if (err)
+            throw new RoomError('Error occured processing sdpOffer: ' + sdpOffer, RoomError.Code.MEDIA_WEBRTC_ENDPOINT_ERROR_CODE)
+
+        try {
+            self.gatherCandidates()
+            publisher.connect(self.getEndpoint())
+            self.setConnectedToPublisher(true)
+            self.setPublisher(publisher)
+            return cb(null, sdpAnswer)
+        } catch (roomError) {
+            console.log(roomError)
+            return cb(roomError, sdpAnswer)
+        }
+    });
+}
+
+SubscriberEndpoint.prototype.isConnectedToPublisher = function () {
+    var self = this
+    return self._connectedToPublisher
+}
+
+SubscriberEndpoint.prototype.setConnectedToPublisher = function (connectedToPublisher) {
+    var self = this
+    self._connectedToPublisher = connectedToPublisher
+}
+SubscriberEndpoint.prototype.getPublisher = function () {
+    var self = this
+    return self._publisher
+}
+SubscriberEndpoint.prototype.setPublisher = function (publisher) {
+    var self = this
+    self._publisher = publisher
+}
 SubscriberEndpoint.prototype.mute = function (muteType) {
     var self = this
     var sink = self._passThru;

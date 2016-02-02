@@ -69,3 +69,4 @@ UserParticipant.prototype.toString = function toString() {
   return util.format('[%s]', parts.join(','));
 };
 
+module.exports = UserParticipant

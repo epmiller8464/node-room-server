@@ -51,3 +51,5 @@ UserNotificationService.prototype.sendNotification = function sendNotification(p
  */
 UserNotificationService.prototype.closeSession = function closeSession(participantRequest) {
 };
+
+module.exports = UserNotificationService

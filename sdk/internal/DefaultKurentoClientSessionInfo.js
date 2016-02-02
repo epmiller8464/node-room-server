@@ -35,3 +35,5 @@ DefaultKurentoClientSessionInfo.prototype.setRoomName = function (roomName) {
 }
 
 inherits(DefaultKurentoClientSessionInfo, KurentoClientSessionInfo)
+
+module.exports = DefaultKurentoClientSessionInfo

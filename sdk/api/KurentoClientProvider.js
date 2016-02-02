@@ -12,3 +12,5 @@ KurentoClientProvider.prototype.getKurentoClient = function(sessionInfo/*Kurento
 
 KurentoClientProvider.prototype.destroyWhenUnused = function() {
 }
+
+module.exports = KurentoClientProvider

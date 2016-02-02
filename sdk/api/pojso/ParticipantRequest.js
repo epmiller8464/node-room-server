@@ -74,7 +74,7 @@ UserParticipant.prototype.toString = function toString() {
   //builder += 'streaming=' + self._streaming + ']';
   return util.format('[%s]', parts.join(','));
 };
-
+module.exports = ParticipantRequest
 
 //@
 //Override

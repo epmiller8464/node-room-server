@@ -195,3 +195,4 @@ NotificationRoomHandler.prototype.onRoomClosed = function onRoomClosed(roomName,
 NotificationRoomHandler.prototype.onParticipantEvicted = function onParticipantEvicted(participant) {
 }
 
+module.exports = NotificationRoomHandler

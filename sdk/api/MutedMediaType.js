@@ -9,3 +9,5 @@ var MutedMediaType = {
   VIDEO: 'VIDEO',
   AUDIO: 'AUDIO'
 };
+
+module.exports = MutedMediaType

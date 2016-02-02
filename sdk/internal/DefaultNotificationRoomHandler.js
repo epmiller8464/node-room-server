@@ -5,13 +5,13 @@
  * Created by ghostmac on 1/12/16.
  */
 
-var debug = require('debug')('node-room-server:DefaultNotificationRoomHandler')
+var debug = require('debug')('node-room-server:DefaultNotificationRoomHandler');
 var inherits = require('inherits');
 var NotificationRoomHandler = require('../api/NotificationRoomHandler');
 
 function DefaultNotificationRoomHandler(userNotificationService) {
-    var self = this
-    DefaultNotificationRoomHandler.super_.call(self)
+    var self = this;
+    DefaultNotificationRoomHandler.super_.call(self);
     self._userNotificationService = userNotificationService
 }
 
@@ -34,7 +34,7 @@ function DefaultNotificationRoomHandler(userNotificationService) {
  *        user should be responded accordingly.
  */
 DefaultNotificationRoomHandler.prototype.onParticipantJoined = function(request, roomName, newUserName, existingParticipants, error) {
-}
+};
 
 /**
  * Called as a result of
@@ -52,7 +52,7 @@ DefaultNotificationRoomHandler.prototype.onParticipantJoined = function(request,
  *        and the user should be responded accordingly.
  */
 DefaultNotificationRoomHandler.prototype.onParticipantLeft = function (request, userName, remainingParticipants, error) {
-}
+};
 
 /**
  * Called as a result of
@@ -87,7 +87,7 @@ DefaultNotificationRoomHandler.prototype.onParticipantLeft = function (request, 
  *        and the user should be responded accordingly.
  */
 DefaultNotificationRoomHandler.prototype.onPublishMedia = function (request, publisherName, sdpAnswer, participants, error) {
-}
+};
 
 /**
  * Called as a result of
@@ -106,7 +106,7 @@ DefaultNotificationRoomHandler.prototype.onPublishMedia = function (request, pub
  *        and the user should be responded accordingly.
  */
 DefaultNotificationRoomHandler.prototype.onUnpublishMedia = function (request, publisherName, participants, error) {
-}
+};
 
 /**
  * Called as a result of
@@ -123,7 +123,7 @@ DefaultNotificationRoomHandler.prototype.onUnpublishMedia = function (request, p
  *        and the user should be responded accordingly.
  */
 DefaultNotificationRoomHandler.prototype.onSubscribe = function (request, sdpAnswer, error) {
-}
+};
 
 /**
  * Called as a result of
@@ -138,7 +138,7 @@ DefaultNotificationRoomHandler.prototype.onSubscribe = function (request, sdpAns
  *        and the user should be responded accordingly.
  */
 DefaultNotificationRoomHandler.prototype.onUnsubscribe = function (request, error) {
-}
+};
 
 
 /**
@@ -160,7 +160,7 @@ DefaultNotificationRoomHandler.prototype.onUnsubscribe = function (request, erro
  *        and the user should be responded accordingly.
  */
 DefaultNotificationRoomHandler.prototype.onSendMessage = function (request, message, userName, roomName, participants, error) {
-}
+};
 
 /**
  * Called as a result of
@@ -175,7 +175,7 @@ DefaultNotificationRoomHandler.prototype.onSendMessage = function (request, mess
  *        and the user should be responded accordingly.
  */
 DefaultNotificationRoomHandler.prototype.onRecvIceCandidate = function (request, error) {
-}
+};
 
 /**
  * Called as a result of {@link NotificationRoomManager#closeRoom()} -
@@ -189,7 +189,11 @@ DefaultNotificationRoomHandler.prototype.onRecvIceCandidate = function (request,
  *        representing the peers of the closed room
  */
 DefaultNotificationRoomHandler.prototype.onRoomClosed = function (roomName, participants) {
-}
+    var self = this
+
+    var notifyParams = {}
+
+};
 
 /**
  * Called as a result of
@@ -202,6 +206,8 @@ DefaultNotificationRoomHandler.prototype.onRoomClosed = function (roomName, part
  *        the evicted peer
  */
 DefaultNotificationRoomHandler.prototype.onParticipantEvicted = function (participant) {
-}
+};
 
-inherits(DefaultNotificationRoomHandler, NotificationRoomHandler)
+inherits(DefaultNotificationRoomHandler, NotificationRoomHandler);
+
+module.exports = DefaultNotificationRoomHandler

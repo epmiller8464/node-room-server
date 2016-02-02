@@ -1,3 +1,83 @@
 /**
  * Created by ghostmac on 1/12/16.
  */
+
+var ProtocolElements = {
+
+    // ---------------------------- CLIENT REQUESTS -----------------------
+
+    SENDMESSAGE_ROOM_METHOD: 'sendMessage',
+    SENDMESSAGE_USER_PARAM: 'userMessage',
+    SENDMESSAGE_ROOM_PARAM: 'roomMessage',
+    SENDMESSAGE_MESSAGE_PARAM: 'message',
+
+    LEAVEROOM_METHOD: 'leaveRoom',
+
+    JOINROOM_METHOD: 'joinRoom',
+    JOINROOM_USER_PARAM: 'user',
+    JOINROOM_ROOM_PARAM: 'room',
+    JOINROOM_PEERID_PARAM: 'id',
+    JOINROOM_PEERSTREAMS_PARAM: 'streams',
+    JOINROOM_PEERSTREAMID_PARAM: 'id',
+
+    PUBLISHVIDEO_METHOD: 'publishVideo',
+    PUBLISHVIDEO_SDPOFFER_PARAM: 'sdpOffer',
+    PUBLISHVIDEO_DOLOOPBACK_PARAM: 'doLoopback',
+    PUBLISHVIDEO_SDPANSWER_PARAM: 'sdpAnswer',
+
+    UNPUBLISHVIDEO_METHOD: 'unpublishVideo',
+
+    RECEIVEVIDEO_METHOD: 'receiveVideoFrom',
+    RECEIVEVIDEO_SDPOFFER_PARAM: 'sdpOffer',
+    RECEIVEVIDEO_SENDER_PARAM: 'sender',
+    RECEIVEVIDEO_SDPANSWER_PARAM: 'sdpAnswer',
+
+    UNSUBSCRIBEFROMVIDEO_METHOD: 'unsubscribeFromVideo',
+    UNSUBSCRIBEFROMVIDEO_SENDER_PARAM: 'sender',
+
+    ONICECANDIDATE_METHOD: 'onIceCandidate',
+    ONICECANDIDATE_EPNAME_PARAM: 'endpointName',
+    ONICECANDIDATE_CANDIDATE_PARAM: 'candidate',
+    ONICECANDIDATE_SDPMIDPARAM: 'sdpMid',
+    ONICECANDIDATE_SDPMLINEINDEX_PARAM: 'sdpMLineIndex',
+
+    CUSTOMREQUEST_METHOD: 'customRequest',
+
+    // ---------------------------- SERVER RESPONSES & EVENTS -----------------
+
+    PARTICIPANTJOINED_METHOD: 'participantJoined',
+    PARTICIPANTJOINED_USER_PARAM: 'id',
+
+    PARTICIPANTLEFT_METHOD: 'participantLeft',
+    PARTICIPANTLEFT_NAME_PARAM: 'name',
+
+    PARTICIPANTEVICTED_METHOD: 'participantEvicted',
+
+    PARTICIPANTPUBLISHED_METHOD: 'participantPublished',
+    PARTICIPANTPUBLISHED_USER_PARAM: 'id',
+    PARTICIPANTPUBLISHED_STREAMS_PARAM: 'streams',
+    PARTICIPANTPUBLISHED_STREAMID_PARAM: 'id',
+
+    PARTICIPANTUNPUBLISHED_METHOD: 'participantUnpublished',
+    PARTICIPANTUNPUBLISHED_NAME_PARAM: 'name',
+
+    PARTICIPANTSENDMESSAGE_METHOD: 'sendMessage',
+    PARTICIPANTSENDMESSAGE_USER_PARAM: 'user',
+    PARTICIPANTSENDMESSAGE_ROOM_PARAM: 'room',
+    PARTICIPANTSENDMESSAGE_MESSAGE_PARAM: 'message',
+
+    ROOMCLOSED_METHOD: 'roomClosed',
+    ROOMCLOSED_ROOM_PARAM: 'room',
+
+    MEDIAERROR_METHOD: 'mediaError',
+    MEDIAERROR_ERROR_PARAM: 'error',
+
+    ICECANDIDATE_METHOD: 'iceCandidate',
+    ICECANDIDATE_EPNAME_PARAM: 'endpointName',
+    ICECANDIDATE_CANDIDATE_PARAM: 'candidate',
+    ICECANDIDATE_SDPMID_PARAM: 'sdpMid',
+    ICECANDIDATE_SDPMLINEINDEX_PARAM: 'sdpMLineIndex'
+
+};
+
+module.exports = ProtocolElements

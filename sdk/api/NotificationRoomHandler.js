@@ -1,9 +1,11 @@
 /**
  * Created by ghostmac on 1/12/16.
  */
-
+var inherits = require('inherits')
+var RoomHandler = require('./RoomHandler')
 function NotificationRoomHandler() {
 }
+inherits(NotificationRoomHandler,RoomHandler);
 
 //public interface NotificationRoomHandler extends RoomHandler {
 

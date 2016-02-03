@@ -8,6 +8,7 @@
 var debug = require('debug')('node-room-server:DefaultNotificationRoomHandler');
 var inherits = require('inherits');
 var NotificationRoomHandler = require('../api/NotificationRoomHandler');
+var ProtocolElement = require('./ProtocolElement')
 
 function DefaultNotificationRoomHandler(userNotificationService) {
     var self = this;
@@ -33,7 +34,29 @@ function DefaultNotificationRoomHandler(userNotificationService) {
  *        error message. If not null, then the join was unsuccessful and the
  *        user should be responded accordingly.
  */
-DefaultNotificationRoomHandler.prototype.onParticipantJoined = function(request, roomName, newUserName, existingParticipants, error) {
+DefaultNotificationRoomHandler.prototype.onParticipantJoined = function (request, roomName, newUserName, existingParticipants, error) {
+    var self = this
+    if (error) {
+        self._userNotificationService.sendErrorResponse(request, null, error)
+        return
+    }
+    var result = []
+    for (var i = 0; i < existingParticipants.lenght; i++) {
+        var participant = existingParticipants[i]
+        var participantJson = {}
+        participantJson[ProtocolElement.JOINROOM_PEERID_PARAM] = participant.getUserName()
+
+        if (participant.isStreaming()) {
+            var stream = {}
+            stream[ProtocolElement.JOINROOM_PEERSTREAMID_PARAM] = 'webcam'
+            participantJson[ProtocolElement.JOINROOM_PEERSTREAMS_PARAM] = [stream]
+        }
+        result.push(participantJson)
+        var notifyParams = {}
+        notifyParams[ProtocolElement.PARTICIPANTJOINED_USER_PARAM] = newUserName
+        self._userNotificationService.sendNotification(participant.getParticipantId(), ProtocolElement.PARTICIPANTJOINED_METHOD, notifyParams)
+    }
+    self._userNotificationService.sendResponse(request, result)
 };
 
 /**
@@ -52,6 +75,22 @@ DefaultNotificationRoomHandler.prototype.onParticipantJoined = function(request,
  *        and the user should be responded accordingly.
  */
 DefaultNotificationRoomHandler.prototype.onParticipantLeft = function (request, userName, remainingParticipants, error) {
+    var self = this
+    if (error && request) {
+        self._userNotificationService.sendErrorResponse(request, null, error)
+        return
+    }
+    var params = {}
+    params[ProtocolElement.PARTICIPANTLEFT_NAME_PARAM] = userName
+    for (var i = 0; i < remainingParticipants.lenght; i++) {
+        var participant = remainingParticipants[i]
+        self._userNotificationService.sendNotification(participant.getParticipantId(), ProtocolElement.PARTICIPANTLEFT_METHOD, params)
+    }
+    if (request) {
+        self._userNotificationService.sendResponse(request, {})
+        self._userNotificationService.closeSession(request)
+    }
+
 };
 
 /**
@@ -87,6 +126,27 @@ DefaultNotificationRoomHandler.prototype.onParticipantLeft = function (request, 
  *        and the user should be responded accordingly.
  */
 DefaultNotificationRoomHandler.prototype.onPublishMedia = function (request, publisherName, sdpAnswer, participants, error) {
+    var self = this
+    if (error) {
+        self._userNotificationService.sendErrorResponse(request, null, error)
+        return
+    }
+    var result = {}
+    result[ProtocolElement.PUBLISHVIDEO_SDPANSWER_PARAM] = sdpAnswer
+    self._userNotificationService.sendResponse(request, result)
+
+    var stream = {}
+    stream[ProtocolElement.PARTICIPANTPUBLISHED_STREAMID_PARAM] = 'webcam'
+    var params = {}
+    params[ProtocolElement.PARTICIPANTPUBLISHED_USER_PARAM] = publisherName
+    params[ProtocolElement.PARTICIPANTPUBLISHED_STREAMS_PARAM] = [stream]
+
+    for (var i = 0; i < participants.lenght; i++) {
+        var participant = participants[i]
+        if (participant.getParticipantId() !== request.getParticipantId()) {
+            self._userNotificationService.sendNotification(participant.getParticipantId(), ProtocolElement.PARTICIPANTPUBLISHED_METHOD, params)
+        }
+    }
 };
 
 /**
@@ -106,6 +166,23 @@ DefaultNotificationRoomHandler.prototype.onPublishMedia = function (request, pub
  *        and the user should be responded accordingly.
  */
 DefaultNotificationRoomHandler.prototype.onUnpublishMedia = function (request, publisherName, participants, error) {
+    var self = this
+    if (error) {
+        self._userNotificationService.sendErrorResponse(request, null, error)
+        return
+    }
+    self._userNotificationService.sendResponse(request, {})
+
+    var params = {}
+    params[ProtocolElement.PARTICIPANTUNPUBLISHED_NAME_PARAM] = publisherName
+
+    for (var i = 0; i < participants.lenght; i++) {
+        var participant = participants[i]
+        if (participant.getParticipantId() !== request.getParticipantId()) {
+            self._userNotificationService.sendNotification(participant.getParticipantId(), ProtocolElement.PARTICIPANTUNPUBLISHED_METHOD, params)
+        }
+    }
+
 };
 
 /**
@@ -123,6 +200,17 @@ DefaultNotificationRoomHandler.prototype.onUnpublishMedia = function (request, p
  *        and the user should be responded accordingly.
  */
 DefaultNotificationRoomHandler.prototype.onSubscribe = function (request, sdpAnswer, error) {
+    var self = this
+    if (error) {
+        self._userNotificationService.sendErrorResponse(request, null, error)
+        return
+    }
+    self._userNotificationService.sendResponse(request, {})
+
+    var result = {}
+    result[ProtocolElement.RECEIVEVIDEO_SDPANSWER_PARAM] = sdpAnswer
+    self._userNotificationService.sendResponse(request, result)
+
 };
 
 /**
@@ -138,6 +226,12 @@ DefaultNotificationRoomHandler.prototype.onSubscribe = function (request, sdpAns
  *        and the user should be responded accordingly.
  */
 DefaultNotificationRoomHandler.prototype.onUnsubscribe = function (request, error) {
+    var self = this
+    if (error) {
+        self._userNotificationService.sendErrorResponse(request, null, error)
+        return
+    }
+    self._userNotificationService.sendResponse(request, {})
 };
 
 
@@ -160,6 +254,21 @@ DefaultNotificationRoomHandler.prototype.onUnsubscribe = function (request, erro
  *        and the user should be responded accordingly.
  */
 DefaultNotificationRoomHandler.prototype.onSendMessage = function (request, message, userName, roomName, participants, error) {
+    var self = this
+    if (error) {
+        self._userNotificationService.sendErrorResponse(request, null, error)
+        return
+    }
+    self._userNotificationService.sendResponse(request, {})
+
+    var params = {}
+    params[ProtocolElement.PARTICIPANTSENDMESSAGE_ROOM_PARAM] = roomName
+    params[ProtocolElement.PARTICIPANTSENDMESSAGE_USER_PARAM] = userName
+    params[ProtocolElement.PARTICIPANTSENDMESSAGE_MESSAGE_PARAM] = message
+    for (var i = 0; i < participants.lenght; i++) {
+        var participant = participants[i]
+        self._userNotificationService.sendNotification(participant.getParticipantId(), ProtocolElement.PARTICIPANTSENDMESSAGE_METHOD, params)
+    }
 };
 
 /**
@@ -175,6 +284,12 @@ DefaultNotificationRoomHandler.prototype.onSendMessage = function (request, mess
  *        and the user should be responded accordingly.
  */
 DefaultNotificationRoomHandler.prototype.onRecvIceCandidate = function (request, error) {
+    var self = this
+    if (error) {
+        self._userNotificationService.sendErrorResponse(request, null, error)
+        return
+    }
+    self._userNotificationService.sendResponse(request, {})
 };
 
 /**
@@ -192,6 +307,11 @@ DefaultNotificationRoomHandler.prototype.onRoomClosed = function (roomName, part
     var self = this
 
     var notifyParams = {}
+    notifyParams[ProtocolElement.ROOMCLOSED_ROOM_PARAM] = roomName
+    for (var i = 0; i < participants.lenght; i++) {
+        var participant = participants[i]
+        self._userNotificationService.sendNotification(participant.getParticipantId(), ProtocolElement.ROOMCLOSED_METHOD, notifyParams)
+    }
 
 };
 
@@ -206,7 +326,56 @@ DefaultNotificationRoomHandler.prototype.onRoomClosed = function (roomName, part
  *        the evicted peer
  */
 DefaultNotificationRoomHandler.prototype.onParticipantEvicted = function (participant) {
+    var self = this
+    self._userNotificationService.sendNotification(participant.getParticipantId(), ProtocolElement.PARTICIPANTEVICTED_METHOD, {})
 };
+
+
+/**
+ * Called as a result of an error intercepted on a media element of a
+ * participant. The participant should be notified.
+ *
+ * @param roomName name of the room
+ * @param participantId identifier of the participant
+ * @param errorDescription description of the error
+ */
+
+
+DefaultNotificationRoomHandler.prototype.onIceCandidate = function (roomName, participantId, endPointName, candidate) {
+    var self = this
+    var params = {}
+    params[ProtocolElement.ICECANDIDATE_EPNAME_PARAM] = endPointName
+    params[ProtocolElement.ICECANDIDATE_SDPMLINEINDEX_PARAM] = candidate.getSdpMLineIndex()
+    params[ProtocolElement.ICECANDIDATE_SDPMID_PARAM] = candidate.getSdpMid()
+    params[ProtocolElement.ICECANDIDATE_CANDIDATE_PARAM] = candidate.getCandidate()
+    self._userNotificationService.sendNotification(participantId, ProtocolElement.ICECANDIDATE_METHOD, params)
+};
+
+DefaultNotificationRoomHandler.prototype.onMediaElementError = function (roomName, participantId, errorDescription) {
+    var self = this
+    var notifyParams = {}
+    notifyParams[ProtocolElement.MEDIAERROR_ERROR_PARAM] = errorDescription
+    self._userNotificationService.sendNotification(participantId, ProtocolElement.MEDIAERROR_METHOD, notifyParams)
+};
+
+/**
+ * Called as a result of an error intercepted on the media pipeline. The
+ * affected participants should be notified.
+ *
+ * @param roomName the room where the error occurred
+ * @param participantIds the participants identifiers
+ * @param errorDescription description of the error
+ */
+DefaultNotificationRoomHandler.prototype.onPipelineError = function (roomName, participantIds/*[string]*/, errorDescription) {
+    var self = this
+    var notifyParams = {}
+    notifyParams[ProtocolElement.MEDIAERROR_ERROR_PARAM] = errorDescription
+    for (var i = 0; i < participantIds.length; i++) {
+        var pid = participantIds[i]
+        self._userNotificationService.sendNotification(pid, ProtocolElement.MEDIAERROR_METHOD, notifyParams)
+    }
+};
+
 
 inherits(DefaultNotificationRoomHandler, NotificationRoomHandler);
 

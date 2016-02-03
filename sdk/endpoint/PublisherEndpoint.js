@@ -172,10 +172,10 @@ PublisherEndpoint.prototype.publish = function (sdpType,
     var sdpResponse = null
     switch (sdpType.toUpperCase()) {
         case SdpType.ANSWER:
-            sdpResponse = self.processAnswer(sdpString)
+            sdpResponse = self.processAnswer(sdpString,cb)
             break
         case SdpType.OFFER:
-            sdpResponse = self.processOffer(sdpString)
+            sdpResponse = self.processOffer(sdpString,cb)
             break
         default:
             throw new RoomError('Cannot publish SdpType: %s ' + sdpType + ')', RoomError.Code.MEDIA_WEBRTC_ENDPOINT_ERROR_CODE);

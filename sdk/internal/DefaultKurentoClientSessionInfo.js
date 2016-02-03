@@ -13,6 +13,7 @@ function DefaultKurentoClientSessionInfo(participantId, roomName) {
     self._roomName = roomName
 }
 
+inherits(DefaultKurentoClientSessionInfo, KurentoClientSessionInfo)
 
 DefaultKurentoClientSessionInfo.prototype.getParticipantId = function () {
     var self = this
@@ -34,6 +35,5 @@ DefaultKurentoClientSessionInfo.prototype.setRoomName = function (roomName) {
     self._roomName = roomName
 }
 
-inherits(DefaultKurentoClientSessionInfo, KurentoClientSessionInfo)
 
 module.exports = DefaultKurentoClientSessionInfo

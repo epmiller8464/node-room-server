@@ -338,6 +338,11 @@ Participant.prototype.hashCode = function () {
 }
 Participant.prototype.equals = function (obj) {
     var self = this
+    if (!obj || !(obj instanceof Participant))
+        return false
+
+    return self.id === obj.id && self.name === obj.name
+
 }
 
 function stringToHash(string) {

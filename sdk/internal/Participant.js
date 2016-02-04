@@ -338,4 +338,11 @@ Participant.prototype.hashCode = function () {
 Participant.prototype.equals = function (obj) {
     var self = this
 }
+
+function stringToHash(string) {
+    var hash = 0
+    for (var i = 0; i < string.length; i++)
+        hash += string.charCodeAt(i)
+    return hash
+}
 module.exports = Participant

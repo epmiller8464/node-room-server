@@ -3,7 +3,6 @@
  */
 
 var debug = require('debug')('node-room-server:poco.spec')
-
 var util = require('util')
 var c = require('chance')();
 var should = require('should');
@@ -15,7 +14,7 @@ var UserParticipant = require('../sdk/api/poco/UserParticipant')
 describe('ParticipantRequest', function () {
     //for (var i = 0; i < 500; i++) {
     it('hashCode', function (done) {
-
+        debug('aksdkabs')
         var rid = (Math.random() * (Math.random() * 1024) | 0) * 100 + 1
         var pid = ((Math.random() * (Math.random() * 1024) | 0) * 31) + 1
         var pr = new ParticipantRequest(pid, rid)
@@ -52,7 +51,7 @@ describe('UserParticipant', function () {
         assert(!ur2.equals(ur))
         ur2.setParticipantId(ur2._participantId >> 1)
         assert(ur2.equals(ur))
-        assert(!ur.equals(new ParticipantRequest(pid,uid,true)))
+        assert(!ur.equals(new ParticipantRequest(pid, uid, true)))
 
         done()
     });

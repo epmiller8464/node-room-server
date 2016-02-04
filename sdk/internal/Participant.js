@@ -20,6 +20,7 @@ function Participant(id, name, room, pipeline, web) {
 
     self._web = web || false
     self._id = id || ''
+    self.id = self._id
     self._name = name || ''
     self._room = room || null
     self._pipeline = pipeline || null

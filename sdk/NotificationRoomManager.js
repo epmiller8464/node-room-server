@@ -5,7 +5,7 @@ var util = require('util')
 var DefaultNotificationRoomHandler = require('./internal/DefaultNotificationRoomHandler')
 var KurentoClientSessionInfo = require('./internal/DefaultKurentoClientSessionInfo')
 var RoomManager = require('./RoomManager')
-var MutedMediaType = require('./api/MutedMediaType')
+//var MutedMediaType = require('./api/MutedMediaType')
 var RoomError = require('./exception/RoomException')
 function NotificationRoomManager(notificationService, kcProvider) {
     var self = this
@@ -113,7 +113,6 @@ NotificationRoomManager.prototype.subscribe = function (remoteName, sdpOffer, re
         self.notificationRoomHandler.onSubscribe(request, sdpAnswer, null);
 
 }
-
 NotificationRoomManager.prototype.unsubscribe = function (remoteName, request) {
     var self = this
     var pid = request.getParticipantId(),
@@ -253,7 +252,6 @@ NotificationRoomManager.prototype.unmuteSubscribedMedia = function (remoteName, 
     var self = this
     self.internalManager.unmuteSubscribedMedia(remoteName, participantId);
 }
-
 NotificationRoomManager.prototype.getRoomManager = function () {
     var self = this
     return self.internalManager

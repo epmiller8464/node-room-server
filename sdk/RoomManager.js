@@ -199,6 +199,7 @@ RoomManager.prototype.sendMessage = function (message, userName, roomName, parti
         self.notificationRoomHandler.onSendMessage(participantId, null, null, null, null, roomError);
     }
 }
+
 RoomManager.prototype.mutePublishedMedia = function (muteType, participantId) {
     var self = this
     self.internalManager.mutePublishedMedia(muteType, participantId);

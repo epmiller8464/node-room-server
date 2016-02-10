@@ -252,7 +252,10 @@ RoomManager.prototype.getPeerSubscribers = function (participantId) {
 }
 RoomManager.prototype.isPublisherStreaming = function (participantId) {
     var self = this
-    return self.internalManager.getPeerSubscribers(participantId)
+    //return self.internalManager.getPeerSubscribers(participantId)
+    var p =  self.getParticipant(participantId)
+    //TODO throw RoomError is isClosed
+    return p.isStreaming()
 }
 RoomManager.prototype.createRoom = function (kcSessionInfo) {
     var self = this

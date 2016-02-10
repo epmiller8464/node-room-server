@@ -97,6 +97,10 @@ Room.prototype.getParticipants = function () {
 
     return result
 }
+/**
+ *
+ * @returns {Array}
+ */
 Room.prototype.getParticipantIds = function () {
     var self = this
     self.checkClosed()

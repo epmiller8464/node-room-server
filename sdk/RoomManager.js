@@ -5,7 +5,8 @@
 var util = require('util')
 var DefaultNotificationRoomHandler = require('./internal/DefaultNotificationRoomHandler')
 var KurentoClientSessionInfo = require('./internal/DefaultKurentoClientSessionInfo')
-var RoomManager = require('./RoomManager')
+var Room = require('./internal/Room')
+var UserParticipant = require('./api/poco/UserParticipant')
 //var MutedMediaType = require('./api/MutedMediaType')
 var RoomError = require('./exception/RoomException')
 function RoomManager(roomHandler, kcProvider) {
@@ -255,43 +256,97 @@ RoomManager.prototype.isPublisherStreaming = function (participantId) {
 }
 RoomManager.prototype.createRoom = function (kcSessionInfo) {
     var self = this
-    return self.internalManager.createRoom(kcSessionInfo)
+    var roomName = kcSessionInfo.getRoomName()
+    var r = self.rooms[roomName]
+
+    if (r) {
+        throw new RoomError(util.format(''), RoomError.Code.ROOM_CANNOT_BE_CREATED_ERROR_CODE)
+    }
+    var kc = self.kcProvider.getKurentoClient(kcSessionInfo)
+    r = new Room(roomName, kc, self.roomHandler, self.kcProvider.destroyWhenUnused())
+    self.rooms[roomName] = r
+    var kcName = "[NAME NOT AVAILABLE]";
+    if (kc.getServerManager() !== null) {
+        //kcName = kc.getServerManager(function(s){
+        // return s.getName();
+        // })
+        kcName = kc.getServerManager().getName();
+
+    }
+    console.log("No room %s exists yet. Created one using KurentoClient %s .", roomName, kcName);
 }
+/**
+ *
+ * @param roomName
+ */
 RoomManager.prototype.closeRoom = function (roomName) {
     var self = this
-    var participants = self.internalManager.closeRoom(roomName);
-    self.notificationRoomHandler.onRoomClosed(roomName, participants);
+    var room = self.rooms[roomName]
+
+    if (!room)
+        throw  new RoomError(util.format('Room %s not found', roomName), RoomError.Code.ROOM_NOT_FOUND_ERROR_CODE)
+
+    if (room.isClosed())
+        throw  new RoomError(util.format('Room %s already closed', roomName), RoomError.Code.ROOM_CLOSED_ERROR_CODE)
+
+    var participants = self.getParticipants(roomName)
+    var pids = room.getParticipantIds()
+    for (var i = 0; i < pids.length; i++) {
+        var pid = pids[i]
+        try {
+            room.leave(pid)
+        } catch (re) {
+            console.log('Error evicting participant with id %s from room %s', pid, roomName)
+        }
+    }
+    room.close()
+    delete self.rooms[roomName]
+    console.log('Room %s removed and closed', roomName)
+    return participants
 }
+
 RoomManager.prototype.getPipeline = function (participantId) {
     var self = this
-    return self.internalManager.getPipeline(participantId)
+    var p = self.getParticipant(participantId)
+    return p.getPipeline()
 }
+
 RoomManager.prototype.getRoomName = function (participantId) {
     var self = this
-    return self.internalManager.getPipeline(participantId)
+    var p = self.getParticipant(participantId)
+    return p.getRoom().getName()
 }
+
 RoomManager.prototype.getParticipantName = function (participantId) {
     var self = this
-    return self.internalManager.getPipeline(participantId)
+    var p = self.getParticipant(participantId)
+    return p.getName()
 }
 RoomManager.prototype.getParticipantInfo = function (participantId) {
     var self = this
-    return self.internalManager.getPipeline(participantId)
-}
-RoomManager.prototype.getParticipant = function (participantId) {
-    var self = this
-    return self.internalManager.getPipeline(participantId)
-}
-RoomManager.prototype.evictParticipant = function (participantId) {
-    var self = this
-    var participant = self.internalManager.getParticipantInfo(participantId)
-    var remainingParticipants = self.internalManager.leaveRoom(participantId);
-    self.notificationRoomHandler.onParticipantLeft(participant.getUserName(), remainingParticipants);
-    self.notificationRoomHandler.onParticipantEvicted(participant);
-}
-RoomManager.prototype.getRoomManager = function () {
-    var self = this
-    return self.internalManager
+    var p = self.getParticipant(participantId)
+    return new UserParticipant(participantId, p.getName())
 }
 
+RoomManager.prototype.getParticipant = function (participantId) {
+    var self = this
+    //return self.internalManager.getPipeline(participantId)
+    for (var key in self.rooms) {
+        var r = self.rooms[key]
+        if (!r.isClosed()) {
+            var p = r.getParticipant(participantId)
+            if (p) {
+                return p
+            }
+            //var exists = r.getParticipantIds().find(function (pid) {
+            //    return pid === participantId
+            //});
+            //if (exists) {
+            //}
+        }
+        var m = util.format('No participant with id %s was found', participantId)
+        throw new RoomError(m, RoomError.Code.USER_NOT_FOUND_ERROR_CODE)
+    }
+}
+//Array.prototype.map
 module.exports = RoomManager

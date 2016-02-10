@@ -8,13 +8,14 @@
 var debug = require('debug')('node-room-server:DefaultNotificationRoomHandler');
 var inherits = require('inherits');
 var NotificationRoomHandler = require('../api/NotificationRoomHandler');
-var ProtocolElement = require('./ProtocolElement')
+var ProtocolElement = require('./ProtocolElement');
 
 function DefaultNotificationRoomHandler(userNotificationService) {
     var self = this;
     DefaultNotificationRoomHandler.super_.call(self);
     self._userNotificationService = userNotificationService
 }
+inherits(DefaultNotificationRoomHandler, NotificationRoomHandler);
 
 
 /**
@@ -376,7 +377,5 @@ DefaultNotificationRoomHandler.prototype.onPipelineError = function (roomName, p
     }
 };
 
-
-inherits(DefaultNotificationRoomHandler, NotificationRoomHandler);
 
 module.exports = DefaultNotificationRoomHandler

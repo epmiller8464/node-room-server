@@ -32,6 +32,12 @@ function Participant(id, name, room, pipeline, web) {
     self._closed = true
     self._log = null
 
+    for (var other in self._room.getParticipants()) {
+        if (self._name !== other.getName()) {
+            self.getNewOrExistingSubscriber(other.getName())
+        }
+    }
+
 }
 
 Participant.prototype.createPublishingEndpoint = function () {
@@ -93,8 +99,9 @@ Participant.prototype.isStreaming = function () {
 }
 Participant.prototype.isSubscribed = function () {
     var self = this
-    for (var se in self._subscribers) {
-        if (se.isConnectedToPublisher())
+    for (var key in self._subscribers) {
+        var sub = self._subscribers[key]
+        if (sub.isConnectedToPublisher())
             return true;
     }
 
@@ -102,6 +109,13 @@ Participant.prototype.isSubscribed = function () {
 }
 Participant.prototype.getConnectedSubscribedEndpoints = function () {
     var self = this
+    var endPoints = []
+    for (var key in self._subscribers) {
+        var sub = self._subscribers[key]
+        if (sub.isConnectedToPublisher())
+            endPoints.push(sub.getEndpointName())
+    }
+    return endPoints
 }
 Participant.prototype.preparePublishConnection = function () {
     var self = this
@@ -278,7 +292,7 @@ Participant.prototype.close = function () {
 
     for (var subscriberName in self._subscribers) {
         var subscriber = self._subscribers[subscriberName]
-        if (subscriber.getEndpoint()) {
+        if (subscriber && subscriber.getEndpoint()) {
             self.releaseSubscriberEndpoint(subscriberName, subscriber)
         }
     }
@@ -322,12 +336,43 @@ Participant.prototype.sendMediaError = function (event) {
 }
 Participant.prototype.releasePublisherEndpoint = function () {
     var self = this
+    if (self._publisher && self._publisher.getEndpoint()) {
+        self._streaming = false
+        self._publisher.unregisterErrorListeners()
+        var elements = self._publisher.getMediaElements()
+        for (var key in elements) {
+            var el = elements[key]
+            self.releaseElement(self._name, el)
+        }
+        self.releaseElement(self._name, self._publisher.getEndpoint())
+        self._publisher = null
+    } else {
+        console.log('Participant: %s trying to release publisher endpoint but is null', self._name)
+    }
 }
 Participant.prototype.releaseSubscriberEndpoint = function (senderName, subscriber) {
     var self = this
+    if (subscriber) {
+        subscriber.unregisterErrorListeners()
+        self.releaseElement(senderName, subscriber.getEndpoint())
+    } else {
+        console.log('Participant: %s trying to release subscriber endpoint for %s but is null', self._name, senderName)
+    }
 }
 Participant.prototype.releaseElement = function (senderName, element) {
     var self = this
+    try {
+        element.release(function (err) {
+
+            if (err) {
+
+                console.log(err)
+            }
+
+        })
+    } catch (err) {
+        console.log(err)
+    }
 }
 Participant.prototype.toString = function () {
     var self = this
@@ -335,6 +380,18 @@ Participant.prototype.toString = function () {
 }
 Participant.prototype.hashCode = function () {
     var self = this
+
+    var id = self.id(),
+        name = self._name(),
+        prime = 31,
+        result = 1;
+
+    var pid = (id) ? (util.isNumber(id) ? id : stringToHash(id)) : 0
+    var uid = (name) ? (util.isNumber(name) ? name : stringToHash(name)) : 0
+
+    result = prime * result + (pid);
+    result = prime * result + (uid);
+    return result;
 }
 Participant.prototype.equals = function (obj) {
     var self = this

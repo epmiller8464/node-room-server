@@ -17,7 +17,7 @@ inherits(DefaultKurentoClientSessionInfo, KurentoClientSessionInfo)
 
 DefaultKurentoClientSessionInfo.prototype.getParticipantId = function () {
     var self = this
-    return self._roomName
+    return self._participantId
 }
 
 DefaultKurentoClientSessionInfo.prototype.setParticipantId = function (pid) {

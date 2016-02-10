@@ -12,26 +12,26 @@ var ParticipantRequest = require('../sdk/api/poco/ParticipantRequest')
 var UserParticipant = require('../sdk/api/poco/UserParticipant')
 
 describe('ParticipantRequest', function () {
-    //for (var i = 0; i < 500; i++) {
-    it('hashCode', function (done) {
-        debug('aksdkabs')
-        var rid = (Math.random() * (Math.random() * 1024) | 0) * 100 + 1
-        var pid = ((Math.random() * (Math.random() * 1024) | 0) * 31) + 1
-        var pr = new ParticipantRequest(pid, rid)
-        var pr2 = new ParticipantRequest(pid, rid)
-        var ts = pr.toString()
-        var expected = util.format('[requestId=%s,participantId=%s]', rid, pid)
-        expected.should.equal(ts)
-        expected.should.not.equal('')
-        console.log(ts)
-        console.log(pr.hashCode())
-        //console.log(pr2.equals(pr))
-        assert(pr2.equals(pr))
-        assert(!pr.equals(new ParticipantRequest(0, 123)))
+    for (var i = 0; i < 35000; i++) {
+        it('hashCode', function (done) {
+            debug('aksdkabs')
+            var rid = (Math.random() * (Math.random() * 1024) | 0) * 100 + 1
+            var pid = ((Math.random() * (Math.random() * 1024) | 0) * 31) + 1
+            var pr = new ParticipantRequest(pid, rid)
+            var pr2 = new ParticipantRequest(pid, rid)
+            var ts = pr.toString()
+            var expected = util.format('[requestId=%s,participantId=%s]', rid, pid)
+            expected.should.equal(ts)
+            expected.should.not.equal('')
+            console.log(ts)
+            console.log(pr.hashCode())
+            //console.log(pr2.equals(pr))
+            assert(pr2.equals(pr))
+            assert(!pr.equals(new ParticipantRequest(0, 123)))
 
-        done()
-    });
-    //}
+            done()
+        });
+    }
 });
 
 describe('UserParticipant', function () {

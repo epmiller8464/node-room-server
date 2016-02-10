@@ -215,35 +215,48 @@ NotificationRoomManager.prototype.getPipeline = function (participantId) {
 }
 NotificationRoomManager.prototype.evictParticipant = function (participantId) {
     var self = this
-    return self.internalManager.getPipeline(participantId)
+    var participant = self.internalManager.getParticipantInfo(participantId)
+    var remainingParticipants = self.internalManager.leaveRoom(participantId);
+    self.notificationRoomHandler.onParticipantLeft(participant.getUserName(), remainingParticipants);
+    self.notificationRoomHandler.onParticipantEvicted(participant);
 }
-NotificationRoomManager.prototype.closeRoom = function (participantId) {
+NotificationRoomManager.prototype.closeRoom = function (roomName) {
     var self = this
+    var participants = self.internalManager.closeRoom(roomName);
+    self.notificationRoomHandler.onRoomClosed(roomName, participants);
 }
 NotificationRoomManager.prototype.generatePublishOffer = function (participantId) {
     var self = this
+    return self.internalManager.generatePublishOffer(participantId);
 }
 NotificationRoomManager.prototype.addMediaElement = function (participantId, element, mediaType) {
     var self = this
+    self.internalManager.addMediaElement(participantId, element, mediaType);
 }
 NotificationRoomManager.prototype.removeMediaElement = function (participantId, element) {
     var self = this
+    self.internalManager.removeMediaElement(participantId, element);
 }
 NotificationRoomManager.prototype.mutePublishedMedia = function (muteType, participantId) {
     var self = this
+    self.internalManager.mutePublishedMedia(muteType, participantId);
 }
 NotificationRoomManager.prototype.unmutePublishedMedia = function (participantId) {
     var self = this
+    self.internalManager.unmutePublishedMedia(participantId);
 }
 NotificationRoomManager.prototype.muteSubscribedMedia = function (remoteName, muteType, participantId) {
     var self = this
+    self.internalManager.muteSubscribedMedia(remoteName, muteType, participantId);
 }
 NotificationRoomManager.prototype.unmuteSubscribedMedia = function (remoteName, participantId) {
     var self = this
+    self.internalManager.unmuteSubscribedMedia(remoteName, participantId);
 }
 
 NotificationRoomManager.prototype.getRoomManager = function () {
-    return this.internalManager
+    var self = this
+    return self.internalManager
 }
 
 

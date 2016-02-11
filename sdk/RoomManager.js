@@ -3,6 +3,8 @@
  */
 
 var util = require('util')
+var kurento = require('kurento-client');
+
 var DefaultNotificationRoomHandler = require('./internal/DefaultNotificationRoomHandler')
 var KurentoClientSessionInfo = require('./internal/DefaultKurentoClientSessionInfo')
 var Room = require('./internal/Room')
@@ -17,7 +19,6 @@ function RoomManager(roomHandler, kcProvider) {
     self.closed = false
     self.log = null
 }
-
 
 RoomManager.prototype.joinRoom = function (userName,
                                            roomName,
@@ -57,6 +58,7 @@ RoomManager.prototype.leaveRoom = function (participantId) {
         self.notificationRoomHandler.onParticipantLeft(participantId, userName, remainingParticipants, null)
 
 }
+
 RoomManager.prototype.publishMedia = function (participantId,
                                                isOffer,
                                                sdp,
@@ -88,6 +90,7 @@ RoomManager.prototype.generatePublishOffer = function (participantId) {
     var self = this
     return self.internalManager.generatePublishOffer(participantId);
 }
+
 RoomManager.prototype.unpublishMedia = function (participantId) {
     var self = this
     var pid = participantId.getParticipantId(),
@@ -111,6 +114,7 @@ RoomManager.prototype.unpublishMedia = function (participantId) {
         self.notificationRoomHandler.onUnpublishMedia(participantId, userName, participants, null)
 
 }
+
 RoomManager.prototype.subscribe = function (remoteName, sdpOffer, participantId) {
     var self = this
     var pid = participantId.getParticipantId(),
@@ -131,6 +135,7 @@ RoomManager.prototype.subscribe = function (remoteName, sdpOffer, participantId)
         self.notificationRoomHandler.onSubscribe(participantId, sdpAnswer, null);
 
 }
+
 RoomManager.prototype.unsubscribe = function (remoteName, participantId) {
     var self = this
     var pid = participantId.getParticipantId(),
@@ -150,126 +155,266 @@ RoomManager.prototype.unsubscribe = function (remoteName, participantId) {
         self.notificationRoomHandler.onUnsubscribe(participantId, null);
 
 }
-RoomManager.prototype.onIceCandidate = function (endpointName, candidate, sdpMLineIndex, sdpMid, participantId) {
+
+RoomManager.prototype.onIceCandidate = function (endpointName,
+                                                 candidate,
+                                                 sdpMLineIndex,
+                                                 sdpMid,
+                                                 participantId) {
     var self = this
-    var pid = participantId.getParticipantId(),
-        userName = null
-    try {
-        userName = self.internalManager.getParticipantName(pid)
-        self.internalManager.onIceCandidate(endpointName, candidate, sdpMLineIndex, sdpMid, pid)
-        self.notificationRoomHandler.onRecvIceCandidate(participantId, null)
-    } catch (roomError) {
-        console.log('Participant: %s Error receiving ICE candidate (epName=%s, candidate=%s) Error:%s', userName, endpointName, candidate, roomError)
-        self.notificationRoomHandler.onRecvIceCandidate(participantId, roomError)
-    }
+    console.log('Request [ICE_CANDIDATE] endpoint=%s candidate=%s sdpMLineIdx=%s sdpMid=%s (%s)',
+        endpointName, candidate, sdpMLineIndex, sdpMid, participantId)
+    var participant = self.getParticipant(participantId);
+    var iceCandidate = kurento.register.complexTypes.IceCandidate({
+        candidate: candidate,
+        sdpMLineIndex: sdpMLineIndex,
+        sdpMid: sdpMid
+    });
+
+    participant.addIceCandidate(endpointName, iceCandidate)
 }
-RoomManager.prototype.addMediaElement = function (participantId, element, mediaType) {
+
+RoomManager.prototype.addMediaElement = function (participantId, element, type) {
     var self = this
-    self.internalManager.addMediaElement(participantId, element, mediaType);
+    var eid = element.getId()
+    console.log('Add media element %s (connection type: %s) to participant %s',
+        eid, type, participantId)
+
+    var participant = self.getParticipant(participantId);
+    var name = participant.getName();
+    if (participant.isClosed())
+        throw new RoomError(
+            util.format('Participant %s has been closed', name),
+            RoomError.Code.USER_CLOSED_ERROR_CODE)
+
+    participant.shapePublisherMedia(element, type);
 }
+
 RoomManager.prototype.removeMediaElement = function (participantId, element) {
     var self = this
-    self.internalManager.removeMediaElement(participantId, element);
+    var eid = element.getId()
+    console.log('Remove media element %s from participant %s', eid, participantId)
+
+    var participant = self.getParticipant(participantId);
+    var name = participant.getName();
+    if (participant.isClosed())
+        throw new RoomError(
+            util.format('Participant %s has been closed', name),
+            RoomError.Code.USER_CLOSED_ERROR_CODE)
+    //"");
+    participant.getPublisher().revert(element);
+    //participant.shapePublisherMedia(element, type);
 }
-RoomManager.prototype.sendMessage = function (message, userName, roomName, participantId) {
-    var self = this
-    console.log('participantId [SEND_MESSAGE] message=%s (%s)', message, participantId)
-    try {
-        var pid = participantId.getParticipantId(),
-            e = null,
-            msg = null
-        if (self.internalManager.getParticipantName(pid) !== userName) {
-            msg = util.format('Provided username %s differs from the participants name.', userName)
-            e = new RoomError(msg, RoomError.Code.USER_NOT_FOUND_ERROR_CODE)
-        }
-        else if (self.internalManager.getRoomName(pid) !== roomName) {
-            msg = util.format('Provided room name %s differs from the participants room.', roomName)
-            e = new RoomError(msg, RoomError.Code.ROOM_NOT_FOUND_ERROR_CODE)
-        }
-        if (e) {
-            console.log('Participant: %s Error sending message %s', userName, msg)
-            self.notificationRoomHandler.onSendMessage(participantId, null, null, null, null, e);
-        }
-        else {
-            var participants = self.internalManager.getParticipants(roomName)
-            self.notificationRoomHandler.onSendMessage(participantId, message, userName, roomName, participants, null)
-        }
-    } catch (roomError) {
-        console.log('Participant: %s Error sending message %s', userName, roomError)
-        self.notificationRoomHandler.onSendMessage(participantId, null, null, null, null, roomError);
-    }
-}
+
+//RoomManager.prototype.sendMessage = function (message, userName, roomName, participantId) {
+//    var self = this
+//    console.log('participantId [SEND_MESSAGE] message=%s (%s)', message, participantId)
+//    try {
+//        var pid = participantId.getParticipantId(),
+//            e = null,
+//            msg = null
+//        if (self.internalManager.getParticipantName(pid) !== userName) {
+//            msg = util.format('Provided username %s differs from the participants name.', userName)
+//            e = new RoomError(msg, RoomError.Code.USER_NOT_FOUND_ERROR_CODE)
+//        }
+//        else if (self.internalManager.getRoomName(pid) !== roomName) {
+//            msg = util.format('Provided room name %s differs from the participants room.', roomName)
+//            e = new RoomError(msg, RoomError.Code.ROOM_NOT_FOUND_ERROR_CODE)
+//        }
+//        if (e) {
+//            console.log('Participant: %s Error sending message %s', userName, msg)
+//            self.notificationRoomHandler.onSendMessage(participantId, null, null, null, null, e);
+//        }
+//        else {
+//            var participants = self.internalManager.getParticipants(roomName)
+//            self.notificationRoomHandler.onSendMessage(participantId, message, userName, roomName, participants, null)
+//        }
+//    } catch (roomError) {
+//        console.log('Participant: %s Error sending message %s', userName, roomError)
+//        self.notificationRoomHandler.onSendMessage(participantId, null, null, null, null, roomError);
+//    }
+//}
 
 RoomManager.prototype.mutePublishedMedia = function (muteType, participantId) {
     var self = this
-    self.internalManager.mutePublishedMedia(muteType, participantId);
+    //TODO add logic
+    //self.internalManager.mutePublishedMedia(muteType, participantId);
 }
+
 RoomManager.prototype.unmutePublishedMedia = function (participantId) {
     var self = this
-    self.internalManager.unmutePublishedMedia(participantId);
+    //TODO add logic
+    //self.internalManager.unmutePublishedMedia(participantId);
 }
+
 RoomManager.prototype.muteSubscribedMedia = function (remoteName, muteType, participantId) {
     var self = this
-    self.internalManager.muteSubscribedMedia(remoteName, muteType, participantId);
+    //self.internalManager.muteSubscribedMedia(remoteName, muteType, participantId);
+    //TODO add logic
 }
+
 RoomManager.prototype.unmuteSubscribedMedia = function (remoteName, participantId) {
     var self = this
-    self.internalManager.unmuteSubscribedMedia(remoteName, participantId);
+    //self.internalManager.unmuteSubscribedMedia(remoteName, participantId);
+    //TODO add logic
 }
+
 RoomManager.prototype.close = function () {
     var self = this
-    if (!self.internalManager.isClosed()) {
-        self.internalManager.close()
+    self.closed = true;
+    console.log('Closing all rooms');
+    for (var roomName in self.rooms) {
+        try {
+            self.closeRoom(roomName);
+
+        } catch (e) {
+            console.log('Error closing room %s', roomName, e);
+        }
     }
 }
+
 RoomManager.prototype.isClosed = function () {
     var self = this
     return self.closed
 }
+
 RoomManager.prototype.getRooms = function () {
     var self = this
-    return self.internalManager.getRooms()
+    return Object.keys(self.rooms)
 
 }
+
 RoomManager.prototype.getParticipants = function (roomName) {
     var self = this
-    return self.internalManager.getParticipants(roomName)
+    var r = self.rooms[roomName];
+    if (!r)
+        throw new RoomError(
+            util.format('Room %s not found', roomName),
+            RoomError.Code.USER_NOT_STREAMING_ERROR_CODE)
+
+    var participants = r.getParticipants();
+    var userParts = {}
+    for (var key in participants) {
+        var p = participants[key]
+        if (!p.isClosed()) {
+            var pid = p.getId()
+            userParts[pid] = new UserParticipant(pid, p.getName(), p.isStreaming())
+        }
+    }
+    return userParts;
 }
 RoomManager.prototype.getPublishers = function (roomName) {
     var self = this
-    return self.internalManager.getPublishers(roomName)
+    var r = self.rooms[roomName];
+    if (!r)
+        throw new RoomError(
+            util.format('Room %s not found', roomName),
+            RoomError.Code.USER_NOT_STREAMING_ERROR_CODE)
+
+    var participants = r.getParticipants();
+    var userParts = {}
+    for (var key in participants) {
+        var p = participants[key]
+        if (!p.isClosed() && p.isStreaming()) {
+            var pid = p.getId()
+            userParts[pid] = new UserParticipant(pid, p.getName(), true)
+        }
+    }
+    return userParts;
 }
 RoomManager.prototype.getSubscribers = function (roomName) {
     var self = this
-    return self.internalManager.getSubscribers(roomName)
+    var r = self.rooms[roomName];
+    if (!r)
+        throw new RoomError(
+            util.format('Room %s not found', roomName),
+            RoomError.Code.USER_NOT_STREAMING_ERROR_CODE)
+    //RoomError.Code.ROOM_NOT_FOUND_ERROR_CODE,
+    var participants = r.getParticipants();
+    var userParts = {}
+    for (var key in participants) {
+        var p = participants[key]
+        if (!p.isClosed() && p.isSubscribed()) {
+            var pid = p.getId()
+            userParts[pid] = new UserParticipant(pid, p.getName(), p.isStreaming())
+        }
+    }
+    return userParts;
 }
+
 RoomManager.prototype.getPeerPublishers = function (participantId) {
     var self = this
-    return self.internalManager.getPeerPublishers(participantId)
+    var participant = self.getParticipant(participantId);
+    //if (participant == null)
+    //    throw new RoomException(Code.USER_NOT_FOUND_ERROR_CODE,
+    //        "No participant with id '" + participantId + "' was found");
+    var subscribedEndpoints = participant.getConnectedSubscribedEndpoints()
+    var room = participant.getRoom()
+    var userParts = {}
+    for (var epName in subscribedEndpoints) {
+        var p = room.getParticipantByName(epName);
+        //userParts.add(new UserParticipant(p.getId(), p.getName()));
+        var pid = p.getId()
+        userParts[pid] = new UserParticipant(pid, p.getName())
+    }
+    return userParts;
 }
+
 RoomManager.prototype.getPeerSubscribers = function (participantId) {
     var self = this
-    return self.internalManager.getPeerSubscribers(participantId)
+    var participant = self.getParticipant(participantId);
+
+    if (!participant.isStreaming())
+        throw new RoomError(
+            util.format('Participant with id %s is not a publisher yet', participantId),
+            RoomError.Code.USER_NOT_STREAMING_ERROR_CODE)
+
+    var userParts = {}
+    var room = participant.getRoom()
+    var endpointName = participant.getName()
+    var parts = room.getParticipants()
+    for (var key in parts) {
+        var p = parts[key]
+        if (!p.equals(participant)) {
+            var subscribedEndpoints = p.getConnectedSubscribedEndpoints();
+            var ep = subscribedEndpoints.find(function (epn) {
+                return epn === endpointName
+            });
+            //if (subscribedEndpoints.contains(endpointName))
+            if (ep) {
+                var pid = p.getId()
+                userParts[pid] = new UserParticipant(pid, p.getName())
+            }
+        }
+    }
+    return userParts;
 }
+
 RoomManager.prototype.isPublisherStreaming = function (participantId) {
     var self = this
-    //return self.internalManager.getPeerSubscribers(participantId)
-    var p =  self.getParticipant(participantId)
+    var p = self.getParticipant(participantId)
     //TODO throw RoomError is isClosed
+
+    if (p.isClosed())
+        throw new RoomError(util.format('Participant %s has been closed.', participantId),
+            RoomError.Code.USER_CLOSED_ERROR_CODE)
+
     return p.isStreaming()
 }
+
 RoomManager.prototype.createRoom = function (kcSessionInfo) {
     var self = this
     var roomName = kcSessionInfo.getRoomName()
     var r = self.rooms[roomName]
 
     if (r) {
-        throw new RoomError(util.format(''), RoomError.Code.ROOM_CANNOT_BE_CREATED_ERROR_CODE)
+        throw new RoomError(util.format('Room %s already exists', roomName),
+            RoomError.Code.ROOM_CANNOT_BE_CREATED_ERROR_CODE)
     }
     var kc = self.kcProvider.getKurentoClient(kcSessionInfo)
     r = new Room(roomName, kc, self.roomHandler, self.kcProvider.destroyWhenUnused())
     self.rooms[roomName] = r
-    var kcName = "[NAME NOT AVAILABLE]";
+    var kcName = '[NAME NOT AVAILABLE]';
     if (kc.getServerManager() !== null) {
         //kcName = kc.getServerManager(function(s){
         // return s.getName();
@@ -279,6 +424,7 @@ RoomManager.prototype.createRoom = function (kcSessionInfo) {
     }
     console.log("No room %s exists yet. Created one using KurentoClient %s .", roomName, kcName);
 }
+
 /**
  *
  * @param roomName
@@ -334,7 +480,6 @@ RoomManager.prototype.getParticipantInfo = function (participantId) {
 
 RoomManager.prototype.getParticipant = function (participantId) {
     var self = this
-    //return self.internalManager.getPipeline(participantId)
     for (var key in self.rooms) {
         var r = self.rooms[key]
         if (!r.isClosed()) {
@@ -342,15 +487,15 @@ RoomManager.prototype.getParticipant = function (participantId) {
             if (p) {
                 return p
             }
-            //var exists = r.getParticipantIds().find(function (pid) {
-            //    return pid === participantId
-            //});
-            //if (exists) {
-            //}
         }
-        var m = util.format('No participant with id %s was found', participantId)
-        throw new RoomError(m, RoomError.Code.USER_NOT_FOUND_ERROR_CODE)
     }
+    var m = util.format('No participant with id %s was found', participantId)
+    throw new RoomError(m, RoomError.Code.USER_NOT_FOUND_ERROR_CODE)
 }
+//var exists = r.getParticipantIds().find(function (pid) {
+//    return pid === participantId
+//});
+//if (exists) {
+//}
 //Array.prototype.map
 module.exports = RoomManager

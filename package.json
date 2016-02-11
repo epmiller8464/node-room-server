@@ -13,6 +13,7 @@
     "inherits": "^2.0.1",
     "kurento-client": "~6.2.0",
     "minimist": "^1.2.0",
+    "morgan": "^1.6.1",
     "node-uuid": "^1.4.7",
     "util": "^0.10.3",
     "ws": "~1.0.1"

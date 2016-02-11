@@ -85,8 +85,9 @@ UserParticipant.prototype.equals = function (obj) {
     if (!(obj) || !(obj instanceof UserParticipant))
         return false
 
-    return self.getParticipantId() === obj.getParticipantId() && self.getUserName() === obj.getUserName()
-};
+    return self.getParticipantId() === obj.getParticipantId() &&
+           self.getUserName() === obj.getUserName()
+}
 
 
 module.exports = UserParticipant

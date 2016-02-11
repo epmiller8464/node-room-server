@@ -58,7 +58,7 @@ Participant.prototype.getName = function () {
 }
 Participant.prototype.shapePublisherMedia = function (element, type) {
     var self = this
-    if (type === null) {
+    if (!type) {
         self._publisher.apply(element)
     } else {
         self._publisher.apply(element, type)

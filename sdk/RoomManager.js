@@ -26,37 +26,55 @@ RoomManager.prototype.joinRoom = function (userName,
                                            kcSessionInfo,
                                            pid) {
     var self = this
-    var existingParticipants = null
-    try {
-        var kcSessionInfo = new KurentoClientSessionInfo(participantId.getParticipantId(), roomName)
-        existingParticipants = self.internalManager.joinRoom(userName, roomName, webParticipant, kcSessionInfo, participantId.getParticipantId())
+    var msg = 'Request [JOIN_ROOM] user=%s, room=%s, web=%s kcSessionInfo.room=%s (%s)'
+    console.log(msg, userName, roomName, webParticipant, (kcSessionInfo || kcSessionInfo.getRoomName()), participantId)
+    var room = self.rooms[roomName]
 
-    } catch (roomError) {
-        console.log('Participant: %s Error joining/creating room %s Error: %s', userName, roomName, roomError)
-        self.notificationRoomHandler.onParticipantJoined(participantId, roomName, userName, null, roomError)
-    }
+    if (!room && kcSessionInfo) {
+        room = self.createRoom(kcSessionInfo)
+        if (!room) {
+            msg = util.format('Room %s not found, must be create before %s can join', roomName, userName)
+            console.log(msg)
+            throw new RoomError(msg, RoomError.Code.ROOM_NOT_FOUND_ERROR_CODE)
+        }
 
-    if (existingParticipants) {
-        self.notificationRoomHandler.onParticipantJoined(participantId, roomName, userName, existingParticipants, null)
+        if (room.isClosed()) {
+            msg = util.format('%s is trying to join room %s but it is closing.', userName, roomName)
+            console.log(msg)
+            throw new RoomError(msg, RoomError.Code.ROOM_CLOSED_ERROR_CODE)
+        }
+        var existingParticipants = self.getParticipants(roomName)
+        room.join(pid, userName, webParticipant)
+        return existingParticipants
     }
 }
+
 RoomManager.prototype.leaveRoom = function (participantId) {
     var self = this
-    var pid = participantId.getParticipantId(),
-        remainingParticipants = null,
-        roomName = null,
-        userName = null
-    try {
-        roomName = self.internalManager.getRoomName(pid)
-        userName = self.internalManager.getParticipantName(pid)
-        remainingParticipants = self.internalManager.leaveRoom(pid)
-    } catch (roomError) {
-        console.log('Participant: %s Error leaving room %s Error: %s', userName, roomName, roomError)
-        self.notificationRoomHandler.onParticipantLeft(participantId, null, null, roomError)
+    console.log('Request [LEAVE_ROOM] (%s)', participantId);
+    var participant = self.getParticipant(participantId);
+    var room = participant.getRoom();
+    var roomName = room.getName();
+    if (room.isClosed()) {
+        var msg = util.format('\'%s\' is trying to leave from room \'%s\' but it is closing', participant.getName(), roomName)
+        console.log(msg)
+        throw new RoomError(msg, RoomError.Code.ROOM_CLOSED_ERROR_CODE)
     }
-    if (remainingParticipants)
-        self.notificationRoomHandler.onParticipantLeft(participantId, userName, remainingParticipants, null)
-
+    room.leave(participantId);
+    var remainingParticipants = null
+    try {
+        remainingParticipants = self.getParticipants(roomName);
+    } catch (e) {
+        console.log('Possible collision when closing the room \'%s\' (not found), %s', roomName, e)
+        remainingParticipants = null;
+    }
+    if (!remainingParticipants) {
+        console.log('No more participants in room \'%s\', removing it and closing it', roomName);
+        room.close();
+        delete self.rooms[roomName]
+        console.log('Room \'%s\' removed and closed', roomName)
+    }
+    return remainingParticipants;
 }
 
 RoomManager.prototype.publishMedia = function (participantId,
@@ -405,15 +423,15 @@ RoomManager.prototype.isPublisherStreaming = function (participantId) {
 RoomManager.prototype.createRoom = function (kcSessionInfo) {
     var self = this
     var roomName = kcSessionInfo.getRoomName()
-    var r = self.rooms[roomName]
+    var room = self.rooms[roomName]
 
-    if (r) {
+    if (room) {
         throw new RoomError(util.format('Room %s already exists', roomName),
             RoomError.Code.ROOM_CANNOT_BE_CREATED_ERROR_CODE)
     }
     var kc = self.kcProvider.getKurentoClient(kcSessionInfo)
-    r = new Room(roomName, kc, self.roomHandler, self.kcProvider.destroyWhenUnused())
-    self.rooms[roomName] = r
+    room = new Room(roomName, kc, self.roomHandler, self.kcProvider.destroyWhenUnused())
+    self.rooms[roomName] = room
     var kcName = '[NAME NOT AVAILABLE]';
     if (kc.getServerManager() !== null) {
         //kcName = kc.getServerManager(function(s){
@@ -423,6 +441,7 @@ RoomManager.prototype.createRoom = function (kcSessionInfo) {
 
     }
     console.log("No room %s exists yet. Created one using KurentoClient %s .", roomName, kcName);
+    return room
 }
 
 /**

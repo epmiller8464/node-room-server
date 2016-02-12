@@ -5,8 +5,8 @@
 var util = require('util')
 var kurento = require('kurento-client');
 
-var DefaultNotificationRoomHandler = require('./internal/DefaultNotificationRoomHandler')
-var KurentoClientSessionInfo = require('./internal/DefaultKurentoClientSessionInfo')
+//var DefaultNotificationRoomHandler = require('./internal/DefaultNotificationRoomHandler')
+//var KurentoClientSessionInfo = require('./internal/DefaultKurentoClientSessionInfo')
 var Room = require('./internal/Room')
 var UserParticipant = require('./api/poco/UserParticipant')
 var SdpType = require('./endpoint/SdpType')
@@ -27,7 +27,7 @@ RoomManager.prototype.joinRoom = function (userName,
                                            pid) {
     var self = this
     var msg = 'Request [JOIN_ROOM] user=%s, room=%s, web=%s kcSessionInfo.room=%s (%s)'
-    console.log(msg, userName, roomName, webParticipant, (kcSessionInfo || kcSessionInfo.getRoomName()), participantId)
+    console.log(msg, userName, roomName, webParticipant, (kcSessionInfo || kcSessionInfo.getRoomName()), pid)
     var room = self.rooms[roomName]
 
     if (!room && kcSessionInfo) {
@@ -94,7 +94,7 @@ RoomManager.prototype.publishMedia = function (participantId,
     var room = participant.getRoom();
     participant.createPublishingEndpoint();
 
-    for (var i = 0; i < mediaElements.lenght; i++) {
+    for (var i = 0; i < mediaElements.length; i++) {
         var elem = mediaElements[i]
         participant.getPublisher().apply(elem);
     }
@@ -309,7 +309,6 @@ RoomManager.prototype.isClosed = function () {
 RoomManager.prototype.getRooms = function () {
     var self = this
     return Object.keys(self.rooms)
-
 }
 
 RoomManager.prototype.getParticipants = function (roomName) {
@@ -405,9 +404,11 @@ RoomManager.prototype.getPeerSubscribers = function (participantId) {
         var p = parts[key]
         if (!p.equals(participant)) {
             var subscribedEndpoints = p.getConnectedSubscribedEndpoints();
-            var ep = subscribedEndpoints.find(function (epn) {
-                return epn === endpointName
-            });
+            //var ep = subscribedEndpoints[endpointName]
+            var ep = subscribedEndpoints[subscribedEndpoints.indexOf(endpointName)]
+            //var ep = subscribedEndpoints.find(function (epn) {
+            //    return epn === endpointName
+            //});
             //if (subscribedEndpoints.contains(endpointName))
             if (ep) {
                 var pid = p.getId()
@@ -502,6 +503,7 @@ RoomManager.prototype.getParticipantName = function (participantId) {
     return p.getName()
 }
 RoomManager.prototype.getParticipantInfo = function (participantId) {
+    //noinspection UnterminatedStatementJS
     var self = this
     var p = self.getParticipant(participantId)
     return new UserParticipant(participantId, p.getName())

@@ -54,8 +54,8 @@ Participant.prototype.getId = function () {
 Participant.prototype.getName = function () {
     var self = this
     return self._name
-
 }
+
 Participant.prototype.shapePublisherMedia = function (element, type) {
     var self = this
     if (!type) {

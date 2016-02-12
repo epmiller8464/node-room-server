@@ -9,7 +9,7 @@ var DefaultNotificationRoomHandler = require('./internal/DefaultNotificationRoom
 var KurentoClientSessionInfo = require('./internal/DefaultKurentoClientSessionInfo')
 var Room = require('./internal/Room')
 var UserParticipant = require('./api/poco/UserParticipant')
-//var MutedMediaType = require('./api/MutedMediaType')
+var SdpType = require('./endpoint/SdpType')
 var RoomError = require('./exception/RoomException')
 function RoomManager(roomHandler, kcProvider) {
     var self = this
@@ -85,93 +85,103 @@ RoomManager.prototype.publishMedia = function (participantId,
                                                doLoopback,
                                                mediaElements) {
     var self = this
-    var pid = participantId.getParticipantId(),
-        userName = null,
-        roomName = null,
-        participants = null,
-        sdpAnswer = null
+    console.log('Request [PUBLISH_MEDIA] isOffer=%s sdp=%s loopbackAltSrc=%s loopbackConnType=%s doLoopback=%s mediaElements=%s (%s)',
+        isOffer, sdp, loopbackAltSrc === null, loopbackConnType, doLoopback, mediaElements, participantId);
 
-    try {
-        userName = self.internalManager.getParticipantName(pid)
-        roomName = self.internalManager.getRoomName(pid)
-        participants = self.internalManager.getParticipants(roomName);
-        sdpAnswer = self.internalManager.publishMedia(pid, isOffer, sdp, loopbackAltSrc, loopbackConnType, doLoopback, mediaElements)
-    } catch (roomError) {
-        console.log('Participant: %s Error publishing media : %s', userName, roomError)
-        self.notificationRoomHandler.onPublishMedia(participantId, null, null, null, roomError)
+    var sdpType = isOffer ? SdpType.OFFER : SdpType.ANSWER;
+    var participant = self.getParticipant(participantId);
+    var name = participant.getName();
+    var room = participant.getRoom();
+    participant.createPublishingEndpoint();
+
+    for (var i = 0; i < mediaElements.lenght; i++) {
+        var elem = mediaElements[i]
+        participant.getPublisher().apply(elem);
     }
-    if (sdpAnswer)
-        self.notificationRoomHandler.onPublishMedia(participantId, userName, sdpAnswer, participants, null)
 
+    var sdpResponse = participant.publishToRoom(sdpType, sdp, doLoopback, loopbackAltSrc, loopbackConnType);
+    var msg = 'Error generating SDP response for publishing user: ' + name;
+    if (!sdpResponse)
+        throw new RoomError(msg, RoomError.Code.MEDIA_SDP_ERROR_CODE)
+
+    room.newPublisher(participant);
+    return sdpResponse;
 }
+
 RoomManager.prototype.generatePublishOffer = function (participantId) {
     var self = this
-    return self.internalManager.generatePublishOffer(participantId);
+    console.log('Request [GET_PUBLISH_SDP_OFFER] (%s)', participantId)
+    var participant = self.getParticipant(participantId);
+    var name = participant.getName();
+    var room = participant.getRoom();
+    participant.createPublishingEndpoint();
+    var sdpOffer = participant.preparePublishConnection()
+    if (!sdpOffer)
+        throw new RoomError('Error generating SDP offer for publishing user ' + name, RoomError.Code.MEDIA_SDP_ERROR_CODE)
+    room.newPublisher(participant)
+    return sdpOffer
 }
 
 RoomManager.prototype.unpublishMedia = function (participantId) {
     var self = this
-    var pid = participantId.getParticipantId(),
-        userName = null,
-        roomName = null,
-        participants = null,
-        unpublished = false
-
-    try {
-        userName = self.internalManager.getParticipantName(pid)
-        self.internalManager.unpublishMedia(pid)
-        unpublished = true
-        roomName = self.internalManager.getRoomName(pid)
-        participants = self.internalManager.getParticipants(roomName);
-    } catch (roomError) {
-        console.log('Participant: %s Error publishing media : %s', userName, roomError)
-        self.notificationRoomHandler.onPublishMedia(participantId, null, null, null, roomError)
+    console.log('Request [UNPUBLISH_MEDIA] (%s)', participantId);
+    var participant = self.getParticipant(participantId)
+    var name = participant.getName()
+    if (!participant.isStreaming()) {
+        var msg = util.format('Participant \'%s\' is not streaming media', name)
+        throw new RoomError(msg, RoomError.Code.USER_NOT_STREAMING_ERROR_CODE)
     }
 
-    if (unpublished)
-        self.notificationRoomHandler.onUnpublishMedia(participantId, userName, participants, null)
-
+    var room = participant.getRoom()
+    participant.unpublishMedia()
+    room.cancelPublisher(participant)
 }
 
 RoomManager.prototype.subscribe = function (remoteName, sdpOffer, participantId) {
     var self = this
-    var pid = participantId.getParticipantId(),
-        userName = null,
-        roomName = null,
-        participants = null,
-        sdpAnswer = null
-
-    try {
-        userName = self.internalManager.getParticipantName(pid)
-        self.internalManager.subscribe(remoteName, sdpOffer, pid)
-    } catch (roomError) {
-        console.log('Participant: %s Error subscribing to %s Error:%s', userName, remoteName, roomError)
-        self.notificationRoomHandler.onSubscribe(participantId, null, roomError);
+    console.log('Request [SUBSCRIBE] remoteParticipant=%s sdpOffer=%s (%s)', remoteName, sdpOffer, participantId);
+    var participant = self.getParticipant(participantId);
+    var name = participant.getName();
+    var room = participant.getRoom();
+    var msg = ''
+    var senderParticipant = room.getParticipantByName(remoteName);
+    if (!senderParticipant) {
+        msg = util.format('PARTICIPANT %s: Requesting to recv media from user %s in room %s but user could not be found', name, remoteName, room.getName())
+        console.log(msg)
+        msg = util.format('User %s not found in room %s', remoteName, room.getName())
+        throw new RoomError(msg, RoomError.Code.USER_NOT_FOUND_ERROR_CODE)
     }
 
-    if (sdpAnswer)
-        self.notificationRoomHandler.onSubscribe(participantId, sdpAnswer, null);
+    if (!senderParticipant.isStreaming()) {
+        msg = util.format('PARTICIPANT %s: Requesting to recv media from user %s in room %s but user is not streaming media', name, remoteName, room.getName())
+        console.log(msg)
+        msg = util.format('User %s not streaming media in room %s', remoteName, room.getName())
+        throw new RoomError(msg, RoomError.Code.USER_NOT_STREAMING_ERROR_CODE)
+    }
 
+    var sdpAnswer = participant.receiveMediaFrom(senderParticipant, sdpOffer);
+    if (!sdpAnswer) {
+        msg = util.format('Unable to generate SDP answer when subscribing to\'%s\'', remoteName)
+        //msg = util.format('User %s not streaming media in room %s', remoteName, room.getName())
+        throw new RoomError(msg, RoomError.Code.MEDIA_SDP_ERROR_CODE)
+    }
+    return sdpAnswer;
 }
 
 RoomManager.prototype.unsubscribe = function (remoteName, participantId) {
     var self = this
-    var pid = participantId.getParticipantId(),
-        userName = null,
-        unsubscribed = false
-
-    try {
-        userName = self.internalManager.getParticipantName(pid)
-        self.internalManager.unsubscribe(remoteName, pid)
-        unsubscribed = true
-    } catch (roomError) {
-        console.log('Participant: %s Error unsubscribing from %s Error:%s', userName, remoteName, roomError)
-        self.notificationRoomHandler.onUnsubscribe(participantId, roomError);
+    console.log('Request [UNSUBSCRIBE] remoteParticipant=%s (%s)', remoteName, participantId)
+    var participant = self.getParticipant(participantId)
+    var name = participant.getName()
+    var room = participant.getRoom()
+    var senderPart = room.getParticipantByName(remoteName)
+    if (!senderPart) {
+        var msg = util.format('PARTICIPANT %s: Requesting to unsubscribe from user %s ' +
+            'in room %s but user could not be found', name, remoteName, room.getName());
+        console.log(msg)
+        throw new RoomError(msg, RoomError.Code.USER_NOT_FOUND_ERROR_CODE)
     }
-
-    if (unsubscribed)
-        self.notificationRoomHandler.onUnsubscribe(participantId, null);
-
+    participant.cancelReceivingMedia(remoteName)
 }
 
 RoomManager.prototype.onIceCandidate = function (endpointName,

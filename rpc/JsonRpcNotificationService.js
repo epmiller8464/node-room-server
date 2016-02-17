@@ -1,3 +1,4 @@
+var inherits = require('inherits')
 var ParticipantSession = require('./ParticipantSession')
 
 
@@ -7,6 +8,8 @@ function JsonRpcNotificationService() {
     self.log = null
     self.sessions = {}
 }
+
+inherits(JsonRpcNotificationService, UserNotificationService)
 
 JsonRpcNotificationService.prototype.addTransaction = function (t, request) {
     var self = this
@@ -62,8 +65,7 @@ JsonRpcNotificationService.prototype.getAndRemoveTransaction = function (partici
 }
 JsonRpcNotificationService.prototype.sendResponse = function (participantRequest, result) {
     var self = this
-
-    var t = getAndRemoveTransaction(participantRequest);
+    var t = self.getAndRemoveTransaction(participantRequest);
     if (t === null) {
         console.log('No transaction found for %s, unable to send result %s', participantRequest, result);
         return;
@@ -77,14 +79,14 @@ JsonRpcNotificationService.prototype.sendResponse = function (participantRequest
 JsonRpcNotificationService.prototype.sendErrorResponse = function (participantRequest, data, error) {
     var self = this
 
-    var t = getAndRemoveTransaction(participantRequest);
+    var t = self.getAndRemoveTransaction(participantRequest);
     if (t === null) {
         console.log('No transaction found for %s, unable to send result %s', participantRequest, data);
         return;
     }
     try {
-        var dataVal = (data !== null ? data.toString() : null);
-        t.sendError(error.getCodeValue(), error.getMessage(), dataVal);
+        var dataVal = (data || data.toString());
+        //t.sendError(error.getCodeValue(), error.getMessage(), dataVal);
     } catch (e) {
         console.log('Exception sending error response to user', e);
     }

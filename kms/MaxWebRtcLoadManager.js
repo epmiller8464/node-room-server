@@ -11,13 +11,12 @@ function MaxWebRtcLoadManager(maxWebRtcPerKms) {
 }
 inherits(MaxWebRtcLoadManager, LoadManager)
 
-
 MaxWebRtcLoadManager.prototype.calculateLoad = function (kms) {
     var self = this
     //var n = MaxWebRtcLoadManager.super_.calculateLoad.call(self)
     //console.log(MaxWebRtcLoadManager.super_)
     //return  self.maxWebRtcPerKms << n
-    var numWebRtcs = countWebRtcEndpoints(kms);
+    var numWebRtcs = self._countWebRtcEndpoints(kms);
     if (numWebRtcs > self.maxWebRtcPerKms) {
         return 1;
     } else {
@@ -31,7 +30,7 @@ MaxWebRtcLoadManager.prototype.allowMoreElements = function (kms) {
 }
 
 
-function countWebRtcEndpoints(kms) {
+MaxWebRtcLoadManager.prototype._countWebRtcEndpoints = function (kms) {
     try {
         var result = kms.getKurentoClient()
             .getServerManager()

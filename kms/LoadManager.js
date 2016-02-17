@@ -31,7 +31,7 @@ function LoadManager() {
     //console.log('LM init')
 }
 LoadManager.calculateLoad = function (kms) {
-    return 10
+    //return 10
 }
 
 LoadManager.allowMoreElements = function (kms) {

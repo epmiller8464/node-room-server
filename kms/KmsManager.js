@@ -38,7 +38,7 @@ KmsLoad.prototype.compareTo = function (kmsLoad) {
 
 function KmsManager() {
     var self = this
-    self.kmss = new FIFO()
+    self.kmss = {}
     self.usageIterator = null
 
 }
@@ -56,16 +56,20 @@ KmsManager.prototype.getKurentoClient = function (sessionInfo) {
 
 KmsManager.prototype.getKms = function (sessionInfo) {
     var self = this
-    if (self.kmss && self.kmss.length > 0) {
-        return self.kmss.shift()
-    } else
-        return null
+    //if (self.kmss && self.kmss.length > 0) {
+    return self.kmss[sessionInfo]
+    //if (self.kmss) {
+    //    return self.kmss[sessionInfo]
+    //return self.kmss.shift()
+    //} else
+    //    return null
 
 }
 
 KmsManager.prototype.addKms = function (kms) {
     var self = this
-    return self.kmss.push(kms)
+    var sessionId = kms.getKurentoClient().sessionId
+    return self.kmss[sessionId] = kms
 }
 KmsManager.prototype.getLessLoadedKms = function () {
     throw new Error('Not implemented exception')

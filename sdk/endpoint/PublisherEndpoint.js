@@ -40,7 +40,7 @@ inherits(PublisherEndpoint, MediaEndpoint);
 
 PublisherEndpoint.prototype.internalEndpointInitialization = function () {
     var self = this;
-    this.super_.internalEndpointInitialization.call(this);
+    PublisherEndpoint.super_.internalEndpointInitialization.call(this);
 
     self._pipeline.create('PassThrough', function (error, passThrough) {
         if (error) {
@@ -57,7 +57,7 @@ PublisherEndpoint.prototype.internalEndpointInitialization = function () {
 
 PublisherEndpoint.prototype.unregisterErrorListeners = function () {
     var self = this;
-    this.super_.unregisterErrorListeners.call(this);
+    PublisherEndpoint.super_.unregisterErrorListeners.call(this);
     this.unregisterElementErrListener(this._passThru, this._passThruSubscription)
     if (this._elementIds) {
         this._elementIds.forEach(function (id) {
@@ -157,7 +157,7 @@ PublisherEndpoint.prototype.publish = function (sdpType,
                                                 loopbackConnType,
                                                 cb) {
     var self = this
-    self.super_.registerOnIceCandidateEventListener.call(self)
+    PublisherEndpoint.super_.registerOnIceCandidateEventListener.call(self)
 
     if (doLoopback) {
         if (loopbackAltSrc) {

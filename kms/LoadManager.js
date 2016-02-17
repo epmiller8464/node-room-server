@@ -1,3 +1,5 @@
+'use strict';
+
 ///*
 // * (C) Copyright 2015 Kurento (http://kurento.org/)
 // *
@@ -22,3 +24,18 @@
 //	boolean allowMoreElements(Kms kms);
 //
 //}
+
+function LoadManager() {
+    //LoadManager.call(this)
+    var self = this
+    //console.log('LM init')
+}
+LoadManager.calculateLoad = function (kms) {
+    return 10
+}
+
+LoadManager.allowMoreElements = function (kms) {
+}
+
+
+module.exports = LoadManager

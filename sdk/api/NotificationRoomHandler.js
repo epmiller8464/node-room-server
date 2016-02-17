@@ -4,8 +4,9 @@
 var inherits = require('inherits')
 var RoomHandler = require('./RoomHandler')
 function NotificationRoomHandler() {
+    RoomHandler.call(this)
 }
-inherits(NotificationRoomHandler,RoomHandler);
+inherits(NotificationRoomHandler, RoomHandler);
 
 //public interface NotificationRoomHandler extends RoomHandler {
 

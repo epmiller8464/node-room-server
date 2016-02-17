@@ -1,66 +1,51 @@
-///*
-// * (C) Copyright 2015 Kurento (http://kurento.org/)
-// *
-// * All rights reserved. This program and the accompanying materials
-// * are made available under the terms of the GNU Lesser General Public License
-// * (LGPL) version 2.1 which accompanies this distribution, and is available at
-// * http://www.gnu.org/licenses/lgpl-2.1.html
-// *
-// * This library is distributed in the hope that it will be useful,
-// * but WITHOUT ANY WARRANTY; without even the implied warranty of
-// * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-// * Lesser General Public License for more details.
-// *
-// */
-//
-//package org.kurento.room.rpc;
-//
-///**
-// * Participant information that should be stored in the WebSocket session.
-// *
-// * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>
-// */
-//public class ParticipantSession {
-//	public static final String SESSION_KEY = "participant";
-//
-//	private String participantName;
-//	private String roomName;
-//
-//	public ParticipantSession() {
-//	}
-//
-//	public ParticipantSession(String participantName, String roomName) {
-//		super();
-//		this.participantName = participantName;
-//		this.roomName = roomName;
-//	}
-//
-//	public String getParticipantName() {
-//		return participantName;
-//	}
-//
-//	public void setParticipantName(String participantName) {
-//		this.participantName = participantName;
-//	}
-//
-//	public String getRoomName() {
-//		return roomName;
-//	}
-//
-//	public void setRoomName(String roomName) {
-//		this.roomName = roomName;
-//	}
-//
-//	@Override
-//	public String toString() {
-//		StringBuilder builder = new StringBuilder();
-//		builder.append("[");
-//		if (participantName != null)
-//			builder.append("participantName=").append(participantName)
-//					.append(", ");
-//		if (roomName != null)
-//			builder.append("roomName=").append(roomName);
-//		builder.append("]");
-//		return builder.toString();
-//	}
-//}
+var inherits = require('inherits')
+/**
+ * Participant information that should be stored in the WebSocket session.
+ *
+ * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>
+ */
+function ParticipantSession(participantName, roomName) {
+    var self = this
+    self.participantName = participantName || ''
+    self.roomName = roomName || ''
+
+}
+
+ParticipantSession.SESSION_KEY = "participant";
+
+ParticipantSession.prototype.getParticipantName = function () {
+    var self = this
+
+    return self.participantName;
+}
+
+ParticipantSession.prototype.setParticipantName = function (participantName) {
+    var self = this
+    self.participantName = participantName;
+}
+
+ParticipantSession.prototype.getRoomName = function () {
+    var self = this
+    return self.roomName;
+}
+
+ParticipantSession.prototype.setRoomName = function (roomName) {
+    var self = this
+    self.roomName = roomName;
+}
+
+ParticipantSession.prototype.toString = function () {
+    //StringBuilder builder = new StringBuilder();
+    //builder.append("[");
+    //if (participantName != null)
+    //    builder.append("participantName=").append(participantName)
+    //        .append(", ");
+    //if (roomName != null)
+    //    builder.append("roomName=").append(roomName);
+    //builder.append("]");
+    //return builder.toString();
+
+}
+
+
+module.exports = ParticipantSession

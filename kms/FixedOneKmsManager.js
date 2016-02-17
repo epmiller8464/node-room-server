@@ -1,5 +1,5 @@
 /*
-/!*
+ /!*
  * (C) Copyright 2015 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
@@ -14,32 +14,54 @@
  *
  *!/
 
-package org.kurento.room.kms;
+ package org.kurento.room.kms;
 
-import org.kurento.client.KurentoClient;
+ import org.kurento.client.KurentoClient;
 
-public class FixedOneKmsManager extends KmsManager {
+ public class FixedOneKmsManager extends KmsManager {
 
-	public FixedOneKmsManager(String kmsWsUri) {
-		this(kmsWsUri, 1);
-	}
+ public FixedOneKmsManager(String kmsWsUri) {
+ this(kmsWsUri, 1);
+ }
 
-	public FixedOneKmsManager(String kmsWsUri, int numKmss) {
-		for (int i = 0; i < numKmss; i++)
-			this.addKms(new Kms(KurentoClient.create(kmsWsUri), kmsWsUri));
-	}
-}
-*/
+ public FixedOneKmsManager(String kmsWsUri, int numKmss) {
+ for (int i = 0; i < numKmss; i++)
+ this.addKms(new Kms(KurentoClient.create(kmsWsUri), kmsWsUri));
+ }
+ }
+ */
 var inherits = require('inherits');
-//var kurentoClient = require('kurento-client');
+var kurento = require('kurento-client');
 
-var kmsManager = require('./KmsManager');
+var KmsManager = require('./KmsManager');
+var Kms = require('./Kms');
 
-function FixedOneKmsManager(kmsWsUri,numKmss){
-  FixedOneKmsManager.super_.call(this);
+function FixedOneKmsManager(kmsWsUri, numKmss, callback) {
+    var self = this
+    FixedOneKmsManager.super_.call(self)
 
+    for (var i = 0; i < numKmss; i++) {
+        kurento(kmsWsUri, function (error, kc) {
+            if (error) {
+                assert.fail(error, undefined, 'Error should be undefined')
+                return null
+            }
+            console.log(kc.sessionId)
+            var kms = new Kms(kc, kmsWsUri)
+            self.addKms(kms)
+            if (self.kmss.length === (numKmss))
+                callback()
+        });
+    }
 }
 
 
+inherits(FixedOneKmsManager, KmsManager);
 
-inherits(FixedOneKmsManager,kmsManager);
+
+function loadNewKurentoClient(wsUri, cb) {
+    kurento(wsUri, cb);
+}
+
+
+module.exports = FixedOneKmsManager

@@ -13,7 +13,7 @@ function UserNotificationService() {
  * @param result Object containing information that depends on the invoked
  *        method. It'd normally be a JSON element-type object.
  */
-UserNotificationService.prototype.sendResponse = function sendResponse(participantRequest, result) {
+UserNotificationService.prototype.sendResponse = function (participantRequest, result) {
 };
 
 /**
@@ -26,7 +26,7 @@ UserNotificationService.prototype.sendResponse = function sendResponse(participa
  * @param error instance of {@link RoomException} POJO, includes a code and
  *        error message
  */
-UserNotificationService.prototype.sendErrorResponse = function sendErrorResponse(participantRequest, data, error) {
+UserNotificationService.prototype.sendErrorResponse = function (participantRequest, data, error) {
 };
 
 /**
@@ -40,7 +40,7 @@ UserNotificationService.prototype.sendErrorResponse = function sendErrorResponse
  * @param params Object containing information that depends on the invoked
  *        method. It'd normally be a JSON element-type object.
  */
-UserNotificationService.prototype.sendNotification = function sendNotification(participantId, method, params) {
+UserNotificationService.prototype.sendNotification = function (participantId, method, params) {
 };
 
 /**
@@ -49,7 +49,7 @@ UserNotificationService.prototype.sendNotification = function sendNotification(p
  *
  * @param participantRequest instance of {@link ParticipantRequest} POJO
  */
-UserNotificationService.prototype.closeSession = function closeSession(participantRequest) {
+UserNotificationService.prototype.closeSession = function (participantRequest) {
 };
 
 module.exports = UserNotificationService

@@ -6,6 +6,7 @@ var debug = require('debug')('node-room-server:mediaendpoint')
 var RoomError = require('../exception/RoomException');
 var Participant = require('./Participant')
 var util = require('util')
+
 function Room(roomName, kurentoClient, roomHandler, destroyKurentoClient) {
 
     var self = this

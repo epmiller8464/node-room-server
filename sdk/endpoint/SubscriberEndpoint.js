@@ -36,7 +36,7 @@ SubscriberEndpoint.prototype.subscribe = function (sdpOffer, publisher, cb) {
     var self = this
     cb = (cb || noop).bind(self)
 
-    self.super_.registerOnIceCandidateEventListener.call(this)
+    SubscriberEndpoint.super_.registerOnIceCandidateEventListener.call(this)
     //will yield a promise
     var sdpAnswer = null;
     self.processOffer(sdpOffer, function (err, sdpAnswer) {

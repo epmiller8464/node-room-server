@@ -17,34 +17,39 @@
 //
 //import org.kurento.client.KurentoClient;
 //
-//public class Kms {
 //
-//	private LoadManager loadManager = new MaxWebRtcLoadManager(10000);
-//	private KurentoClient client;
-//	private String kmsUri;
-//
-//	public Kms(KurentoClient client, String kmsUri) {
-//		this.client = client;
-//		this.kmsUri = kmsUri;
-//	}
-//
-//	public void setLoadManager(LoadManager loadManager) {
-//		this.loadManager = loadManager;
-//	}
-//
-//	public double getLoad() {
-//		return loadManager.calculateLoad(this);
-//	}
-//
-//	public boolean allowMoreElements() {
-//		return loadManager.allowMoreElements(this);
-//	}
-//
-//	public String getUri() {
-//		return kmsUri;
-//	}
-//
-//	public KurentoClient getKurentoClient() {
-//		return this.client;
-//	}
-//}
+var MaxWebRtcLoadManager = require('./MaxWebRtcLoadManager')
+
+function Kms(client, kmsUri) {
+    var self = this
+
+    self.loadManager = new MaxWebRtcLoadManager(50);
+    self.client = client || null
+    self.kmsUri = kmsUri || null
+}
+
+Kms.prototype.setLoadManager = function (loadManager) {
+    var self = this
+    self.loadManager = loadManager;
+}
+Kms.prototype.getLoad = function () {
+    var self = this
+    return self.loadManager.calculateLoad(self);
+}
+
+Kms.prototype.allowMoreElements = function () {
+    var self = this
+    return self.loadManager.allowMoreElements(self);
+}
+Kms.prototype.getUri = function () {
+    var self = this
+    return self.kmsUri;
+}
+
+Kms.prototype.getKurentoClient = function () {
+    var self = this
+    return self.client;
+}
+
+
+module.exports = Kms

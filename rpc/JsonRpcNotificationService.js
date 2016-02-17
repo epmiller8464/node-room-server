@@ -1,179 +1,136 @@
-///*
-// * (C) Copyright 2015 Kurento (http://kurento.org/)
-// *
-// * All rights reserved. This program and the accompanying materials are made
-// * available under the terms of the GNU Lesser General Public License (LGPL)
-// * version 2.1 which accompanies this distribution, and is available at
-// * http://www.gnu.org/licenses/lgpl-2.1.html
-// *
-// * This library is distributed in the hope that it will be useful, but WITHOUT
-// * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
-// * details.
-// */
-//
-//package org.kurento.room.rpc;
-//
-//import java.io.IOException;
-//import java.util.concurrent.ConcurrentHashMap;
-//import java.util.concurrent.ConcurrentMap;
-//
-//import org.kurento.jsonrpc.Session;
-//import org.kurento.jsonrpc.Transaction;
-//import org.kurento.jsonrpc.message.Request;
-//import org.kurento.room.api.UserNotificationService;
-//import org.kurento.room.api.pojo.ParticipantRequest;
-//import org.kurento.room.exception.RoomException;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-//
-//import com.google.gson.JsonObject;
-//
-///**
-// * JSON-RPC implementation of {@link UserNotificationService} for WebSockets.
-// *
-// * @author <a href="mailto:rvlad@naevatec.com">Radu Tom Vlad</a>
-// */
-//public class JsonRpcNotificationService implements UserNotificationService {
-//	private static final Logger log = LoggerFactory
-//			.getLogger(JsonRpcNotificationService.class);
-//
-//	private static ConcurrentMap<String, SessionWrapper> sessions =
-//			new ConcurrentHashMap<String, SessionWrapper>();
-//
-//	public SessionWrapper addTransaction(Transaction t,
-//			Request<JsonObject> request) {
-//		String sessionId = t.getSession().getSessionId();
-//		SessionWrapper sw = sessions.get(sessionId);
-//		if (sw == null) {
-//			sw = new SessionWrapper(t.getSession());
-//			SessionWrapper oldSw = sessions.putIfAbsent(sessionId, sw);
-//			if (oldSw != null) {
-//				log.warn("Concurrent initialization of session wrapper #{}",
-//						sessionId);
-//				sw = oldSw;
-//			}
-//		}
-//		sw.addTransaction(request.getId(), t);
-//		return sw;
-//	}
-//
-//	public Session getSession(String sessionId) {
-//		SessionWrapper sw = sessions.get(sessionId);
-//		if (sw == null)
-//			return null;
-//		return sw.getSession();
-//	}
-//
-//	private Transaction getAndRemoveTransaction(
-//			ParticipantRequest participantRequest) {
-//		Integer tid = null;
-//		if (participantRequest == null) {
-//			log.warn("Unable to obtain a transaction for a null ParticipantRequest object");
-//			return null;
-//		}
-//		String tidVal = participantRequest.getRequestId();
-//		try {
-//			tid = Integer.parseInt(tidVal);
-//		} catch (NumberFormatException e) {
-//			log.error(
-//					"Invalid transaction id, a number was expected but recv: {}",
-//					tidVal, e);
-//			return null;
-//		}
-//		String sessionId = participantRequest.getParticipantId();
-//		SessionWrapper sw = sessions.get(sessionId);
-//		if (sw == null) {
-//			log.warn("Invalid session id {}", sessionId);
-//			return null;
-//		}
-//		log.trace("#{} - {} transactions", sessionId, sw.getTransactions()
-//				.size());
-//		Transaction t = sw.getTransaction(tid);
-//		sw.removeTransaction(tid);
-//		return t;
-//	}
-//
-//	@Override
-//	public void sendResponse(ParticipantRequest participantRequest,
-//			Object result) {
-//		Transaction t = getAndRemoveTransaction(participantRequest);
-//		if (t == null) {
-//			log.error("No transaction found for {}, unable to send result {}",
-//					participantRequest, result);
-//			return;
-//		}
-//		try {
-//			t.sendResponse(result);
-//		} catch (Exception e) {
-//			log.error("Exception responding to user", e);
-//		}
-//	}
-//
-//	@Override
-//	public void sendErrorResponse(ParticipantRequest participantRequest,
-//			Object data, RoomException error) {
-//		Transaction t = getAndRemoveTransaction(participantRequest);
-//		if (t == null) {
-//			log.error("No transaction found for {}, unable to send result {}",
-//					participantRequest, data);
-//			return;
-//		}
-//		try {
-//			String dataVal = (data != null ? data.toString() : null);
-//			t.sendError(error.getCodeValue(), error.getMessage(), dataVal);
-//		} catch (Exception e) {
-//			log.error("Exception sending error response to user", e);
-//		}
-//	}
-//
-//	@Override
-//	public void sendNotification(final String participantId,
-//			final String method, final Object params) {
-//		SessionWrapper sw = sessions.get(participantId);
-//		if (sw == null || sw.getSession() == null) {
-//			log.error(
-//					"No session found for id {}, unable to send notification {}: {}",
-//					participantId, method, params);
-//			return;
-//		}
-//		Session s = sw.getSession();
-//
-//		try {
-//			s.sendNotification(method, params);
-//		} catch (Exception e) {
-//			log.error("Exception sending notification to user", e);
-//		}
-//	}
-//
-//	@Override
-//	public void closeSession(ParticipantRequest participantRequest) {
-//		if (participantRequest == null) {
-//			log.error("No session found for null ParticipantRequest object, "
-//					+ "unable to cleanup");
-//			return;
-//		}
-//		String sessionId = participantRequest.getParticipantId();
-//		SessionWrapper sw = sessions.get(sessionId);
-//		if (sw == null || sw.getSession() == null) {
-//			log.error("No session found for id {}, unable to cleanup",
-//					sessionId);
-//			return;
-//		}
-//		Session s = sw.getSession();
-//		try {
-//			ParticipantSession ps = null;
-//			if (s.getAttributes().containsKey(ParticipantSession.SESSION_KEY))
-//				ps =
-//						(ParticipantSession) s.getAttributes().get(
-//								ParticipantSession.SESSION_KEY);
-//			s.close();
-//			log.info("Closed session for req {} (userInfo:{})",
-//					participantRequest, ps);
-//		} catch (IOException e) {
-//			log.error("Error closing session for req {}", participantRequest, e);
-//		}
-//		sessions.remove(sessionId);
-//	}
-//
-//}
+var ParticipantSession = require('./ParticipantSession')
+
+
+function JsonRpcNotificationService() {
+    //private static ConcurrentMap<var , var > sessions = new ConcurrentHashMap<var , var >();
+    var self = this
+    self.log = null
+    self.sessions = {}
+}
+
+JsonRpcNotificationService.prototype.addTransaction = function (t, request) {
+    var self = this
+
+    var sessionId = t.getSession().getSessionId();
+    var sw = self.sessions[sessionId];
+    if (sw === null) {
+        //sw = new (t.getSession())
+        var oldSw = self.sessions.putIfAbsent(sessionId, sw);
+        if (oldSw !== null) {
+            console.log('Concurrent initialization of session wrapper #%s', sessionId);
+            sw = oldSw;
+        }
+    }
+    sw.addTransaction(request.getId(), t);
+    return sw;
+}
+JsonRpcNotificationService.prototype.getSession = function (sessionId) {
+    var self = this
+
+    var sw = self.sessions[sessionId];
+    if (sw == null)
+        return null;
+    return sw.getSession();
+}
+JsonRpcNotificationService.prototype.getAndRemoveTransaction = function (participantRequest) {
+    var self = this
+
+    var tid = null;
+    if (participantRequest === null) {
+        console.log('Unable to obtain a transaction for a null ParticipantRequest object');
+        return null;
+    }
+    var tidVal = participantRequest.getRequestId();
+    try {
+        tid = parseInt(tidVal);
+    } catch (e) {
+        console.log(
+            'Invalid transaction id, a number was expected but recv: %s',
+            tidVal, e);
+        return null;
+    }
+    var sessionId = participantRequest.getParticipantId();
+    var sw = self.sessions[sessionId];
+    if (sw === null) {
+        console.log('Invalid session id %s', sessionId);
+        return null;
+    }
+    console.log('#%s - %s transactions', sessionId, sw.getTransactions().length);
+    var t = sw.getTransaction(tid);
+    sw.removeTransaction(tid);
+    return t;
+}
+JsonRpcNotificationService.prototype.sendResponse = function (participantRequest, result) {
+    var self = this
+
+    var t = getAndRemoveTransaction(participantRequest);
+    if (t === null) {
+        console.log('No transaction found for %s, unable to send result %s', participantRequest, result);
+        return;
+    }
+    try {
+        t.sendResponse(result);
+    } catch (e) {
+        console.log('Exception responding to user', e);
+    }
+}
+JsonRpcNotificationService.prototype.sendErrorResponse = function (participantRequest, data, error) {
+    var self = this
+
+    var t = getAndRemoveTransaction(participantRequest);
+    if (t === null) {
+        console.log('No transaction found for %s, unable to send result %s', participantRequest, data);
+        return;
+    }
+    try {
+        var dataVal = (data !== null ? data.toString() : null);
+        t.sendError(error.getCodeValue(), error.getMessage(), dataVal);
+    } catch (e) {
+        console.log('Exception sending error response to user', e);
+    }
+}
+JsonRpcNotificationService.prototype.sendNotification = function (participantId, method, params) {
+    var self = this
+
+    var sw = self.sessions.get(participantId);
+    if (sw === null || sw.getSession() === null) {
+        console.log('No session found for id %s, unable to send notification %s: %s', participantId, method, params);
+        return;
+    }
+    var s = sw.getSession();
+
+    try {
+        s.sendNotification(method, params);
+    } catch (e) {
+        console.log('Exception sending notification to user', e);
+    }
+}
+JsonRpcNotificationService.prototype.closeSession = function (participantRequest) {
+    var self = this
+
+    if (participantRequest === null) {
+        console.log('No session found for null ParticipantRequest object, unable to cleanup');
+        return;
+    }
+    var sessionId = participantRequest.getParticipantId();
+    var sw = self.sessions[sessionId];
+    if (sw === null || sw.getSession() === null) {
+        console.log('No session found for id %s, unable to cleanup', sessionId);
+        return;
+    }
+    var s = sw.getSession();
+    try {
+
+        var ps = null;
+        if (s.getAttributes().containsKey(ParticipantSession.SESSION_KEY))
+            ps = s.getAttributes().get(ParticipantSession.SESSION_KEY);
+        s.close();
+        console.log('Closed session for req %s (userInfo:%s)',
+            participantRequest, ps);
+    } catch (e) {
+        console.log('Error closing session for req %s', participantRequest, e);
+    }
+    self.sessions.remove(sessionId);
+}
+
+module.exports = JsonRpcNotificationService

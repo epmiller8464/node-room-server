@@ -2,7 +2,6 @@
  * Created by ghostmac on 1/22/16.
  */
 var debug = require('debug')('node-room-server:mediaendpoint.spec')
-
 var util = require('util')
 //var inherits = require('inherits');
 var should = require('should');
@@ -10,23 +9,11 @@ var assert = require('assert');
 //var EventEmitter = require('events').EventEmitter;
 var MediaEndpoint = require('../sdk/endpoint/MediaEndpoint')
 var PublisherEndpoint = require('../sdk/endpoint/PublisherEndpoint')
+var max = require('../kms/MaxWebRtcLoadManager')
+
 
 describe('MediaEndpoint', function () {
     it('init', function (done) {
-        //var x = [{s:1},{},{test:'test'}]
-        var x = ['w', '2', 'test']
-        //console.log(x)
-        //console.log(x.indexOf('test'))
-        var i = x.indexOf('2')
-        //var ii = x.indexOf('')
-
-        var xs = x.splice(i, 1)
-        //console.log(xs, x, x.length)
-        //xs = x.splice('2', 1,'fs')
-        //console.log(xs,x)
-
-        //debug('mep:init')
-        //var x = ['a', 'b', 2]
         //var mep = new MediaEndpoint({web: true})
         //var pep = new PublisherEndpoint()
         //assert(mep.isWeb())
@@ -43,10 +30,14 @@ describe('MediaEndpoint', function () {
         //    console.log(t[i]);
         //
         //})
-        console.log(stringToHash(null))
-        console.log(hashCode('text', true, 'e'))
-        console.log(hashCode(undefined, false, null))
-
+        //console.log(stringToHash(null))
+        //console.log(hashCode('text', true, 'e'))
+        //console.log(hashCode(undefined, false, null))
+        var x = new max()
+        console.log(util.inspect(x))
+        console.log(x.calculateLoad())
+        x = new max()
+        console.log(x.calculateLoad())
         done()
     });
 });

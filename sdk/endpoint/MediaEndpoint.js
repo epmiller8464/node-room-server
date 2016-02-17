@@ -22,8 +22,8 @@ var EndpointConfig = {web: false, owner: null, endpointName: null, pipeline: nul
  * @constructor
  */
 function MediaEndpoint(endpointConfig) {
-    endpointConfig = endpointConfig || {}
     var self = this;
+    endpointConfig = endpointConfig || {}
 
     self._log = endpointConfig.log || null;
     //private boolean web = false;

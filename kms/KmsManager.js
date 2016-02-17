@@ -12,112 +12,87 @@
 // * details.
 // */
 //
-//package org.kurento.room.kms;
-//
-//import java.util.ArrayList;
-//import java.util.Collections;
-//import java.util.Iterator;
-//import java.util.List;
-//
-//import org.kurento.client.KurentoClient;
-//import org.kurento.room.api.KurentoClientProvider;
-//import org.kurento.room.api.KurentoClientSessionInfo;
-//import org.kurento.room.exception.RoomException;
-//import org.kurento.room.exception.RoomException.Code;
-//import org.kurento.room.internal.DefaultKurentoClientSessionInfo;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-//
-//public abstract class KmsManager implements KurentoClientProvider {
-//
-//	public static class KmsLoad implements Comparable<KmsLoad> {
-//
-//		private Kms kms;
-//		private double load;
-//
-//		public KmsLoad(Kms kms, double load) {
-//			this.kms = kms;
-//			this.load = load;
-//		}
-//
-//		public Kms getKms() {
-//			return kms;
-//		}
-//
-//		public double getLoad() {
-//			return load;
-//		}
-//
-//		@Override
-//		public int compareTo(KmsLoad o) {
-//			return Double.compare(this.load, o.load);
-//		}
-//	}
-//
-//	private final Logger log = LoggerFactory.getLogger(KmsManager.class);
-//
-//	private List<Kms> kmss = new ArrayList<Kms>();
-//	private Iterator<Kms> usageIterator = null;
-//
-//	@Override
-//	public KurentoClient getKurentoClient(KurentoClientSessionInfo sessionInfo)
-//			throws RoomException {
-//		if (!(sessionInfo instanceof DefaultKurentoClientSessionInfo))
-//			throw new RoomException(Code.GENERIC_ERROR_CODE,
-//					"Unkown session info bean type (expected "
-//							+ DefaultKurentoClientSessionInfo.class.getName()
-//							+ ")");
-//		return getKms((DefaultKurentoClientSessionInfo) sessionInfo)
-//				.getKurentoClient();
-//	}
-//
-//	/**
-//	 * Returns a {@link Kms} using a round-robin strategy.
-//	 *
-//	 * @param sessionInfo
-//	 *            session's id
-//	 */
-//	public synchronized Kms getKms(
-//			DefaultKurentoClientSessionInfo sessionInfo) {
-//		if (usageIterator == null || !usageIterator.hasNext())
-//			usageIterator = kmss.iterator();
-//		return usageIterator.next();
-//	}
-//
-//	public synchronized void addKms(Kms kms) {
-//		this.kmss.add(kms);
-//	}
-//
-//	public synchronized Kms getLessLoadedKms() {
-//		return Collections.min(getKmsLoads()).kms;
-//	}
-//
-//	public synchronized Kms getNextLessLoadedKms() {
-//		List<KmsLoad> sortedLoads = getKmssSortedByLoad();
-//		if (sortedLoads.size() > 1)
-//			return sortedLoads.get(1).kms;
-//		else
-//			return sortedLoads.get(0).kms;
-//	}
-//
-//	public synchronized List<KmsLoad> getKmssSortedByLoad() {
-//		List<KmsLoad> kmsLoads = getKmsLoads();
-//		Collections.sort(kmsLoads);
-//		return kmsLoads;
-//	}
-//
-//	private List<KmsLoad> getKmsLoads() {
-//		ArrayList<KmsLoad> kmsLoads = new ArrayList<>();
-//		for (Kms kms : kmss) {
-//			double load = kms.getLoad();
-//			kmsLoads.add(new KmsLoad(kms, load));
-//			log.trace("Calc load {} for kms: {}", load, kms.getUri());
-//		}
-//		return kmsLoads;
-//	}
-//
-//	@Override
-//	public boolean destroyWhenUnused() {
-//		return false;
-//	}
-//}
+var util = require('util')
+var inherits = require('inherits')
+var DefaultKurentoClientSessionInfo = require('../sdk/internal/DefaultKurentoClientSessionInfo')
+var KurentoClientProvider = require('../sdk/api/KurentoClientProvider')
+var FIFO = require('fifo')
+
+function KmsLoad(kms, load) {
+    var self = this;
+    self.kms = kms || null
+    self.load = load || 0
+}
+
+
+KmsLoad.prototype.getLoad = function () {
+    return this.load
+}
+
+KmsLoad.prototype.getKMS = function () {
+    return this.kms
+}
+KmsLoad.prototype.compareTo = function (kmsLoad) {
+    return this.load > kmsLoad.load
+}
+
+function KmsManager() {
+    var self = this
+    self.kmss = new FIFO()
+    self.usageIterator = null
+
+}
+
+inherits(KmsManager, KurentoClientProvider)
+
+KmsManager.prototype.getKurentoClient = function (sessionInfo) {
+    var self = this
+    //var msg = util.format('Unknow session type.'
+    console.log('get kurento client %s', sessionInfo)
+
+    var kc = self.getKms(sessionInfo)
+    return kc.getKurentoClient()
+}
+
+KmsManager.prototype.getKms = function (sessionInfo) {
+    var self = this
+    if (self.kmss && self.kmss.length > 0) {
+        return self.kmss.shift()
+    } else
+        return null
+
+}
+
+KmsManager.prototype.addKms = function (kms) {
+    var self = this
+    return self.kmss.push(kms)
+}
+KmsManager.prototype.getLessLoadedKms = function () {
+    throw new Error('Not implemented exception')
+}
+KmsManager.prototype.getNextLessLoadedKms = function () {
+    throw new Error('Not implemented exception')
+}
+KmsManager.prototype.getKmssSortedByLoad = function () {
+    throw new Error('Not implemented exception')
+}
+
+KmsManager.prototype.getKmsLoads = function () {
+    var self = this
+    var loads = self.kmss.toArray()
+    for (var i = 0; i < loads.length; i++) {
+        //while (self.kmss.first()) {
+        var kms = loads[i]
+        //var kms = self.kmss.shift()
+        loads[i] = new KmsLoad(kms, kms.getLoad())
+    }
+
+    return loads
+}
+
+KmsManager.prototype.destroyWhenUnused = function () {
+    return false
+}
+
+module.exports = KmsLoad
+module.exports = KmsManager

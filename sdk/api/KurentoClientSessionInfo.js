@@ -11,7 +11,7 @@
 
 function KurentoClientSessionInfo() {}
 
-KurentoClientSessionInfo.prototype.getRoomName = function (){}
+KurentoClientSessionInfo.getRoomName = function (){}
 
 
 module.exports = KurentoClientSessionInfo

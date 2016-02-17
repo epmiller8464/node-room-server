@@ -4,9 +4,6 @@
 
 var util = require('util')
 var kurento = require('kurento-client');
-
-//var DefaultNotificationRoomHandler = require('./internal/DefaultNotificationRoomHandler')
-//var KurentoClientSessionInfo = require('./internal/DefaultKurentoClientSessionInfo')
 var Room = require('./internal/Room')
 var UserParticipant = require('./api/poco/UserParticipant')
 var SdpType = require('./endpoint/SdpType')

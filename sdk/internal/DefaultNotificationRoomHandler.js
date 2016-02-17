@@ -340,8 +340,6 @@ DefaultNotificationRoomHandler.prototype.onParticipantEvicted = function (partic
  * @param participantId identifier of the participant
  * @param errorDescription description of the error
  */
-
-
 DefaultNotificationRoomHandler.prototype.onIceCandidate = function (roomName, participantId, endPointName, candidate) {
     var self = this
     var params = {}

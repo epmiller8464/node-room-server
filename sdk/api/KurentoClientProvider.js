@@ -6,11 +6,14 @@
 
 function KurentoClientProvider() {
 }
-
-KurentoClientProvider.prototype.getKurentoClient = function(sessionInfo/*KurentoClientSessionInfo*/) {
+/**
+ *
+ * @param sessionInfo {KurentoClientSessionInfo}
+ */
+KurentoClientProvider.getKurentoClient = function (sessionInfo) {
 }
 
-KurentoClientProvider.prototype.destroyWhenUnused = function() {
+KurentoClientProvider.destroyWhenUnused = function () {
 }
 
 module.exports = KurentoClientProvider

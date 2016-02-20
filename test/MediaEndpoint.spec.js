@@ -10,7 +10,8 @@ var assert = require('assert');
 var MediaEndpoint = require('../sdk/endpoint/MediaEndpoint')
 var PublisherEndpoint = require('../sdk/endpoint/PublisherEndpoint')
 var max = require('../kms/MaxWebRtcLoadManager')
-
+var JsonRpcNotificationService = require('../rpc/JsonRpcNotificationService')
+var NotificationRoomHandler = require('../sdk/internal/NotificationRoomHandler')
 
 describe('MediaEndpoint', function () {
     it('init', function (done) {
@@ -32,11 +33,15 @@ describe('MediaEndpoint', function () {
         //})
         //console.log(stringToHash(null))
         //console.log(hashCode('text', true, 'e'))
+        var userNotifyService = new JsonRpcNotificationService()
+        var roomHandler = new NotificationRoomHandler(userNotifyService)
         //console.log(hashCode(undefined, false, null))
-        var x = new max()
-        console.log(util.inspect(x))
-        console.log(x.calculateLoad())
-        console.log(x.allowMoreElements())
+        console.log(util.inspect(roomHandler))
+        console.log(roomHandler.onIceCandidate())
+        //var x = new max()
+        //console.log(util.inspect(x))
+        //console.log(x.calculateLoad())
+        //console.log(x.allowMoreElements())
         done()
     });
 });

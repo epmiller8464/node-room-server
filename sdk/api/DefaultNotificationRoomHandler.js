@@ -4,7 +4,7 @@
 var inherits = require('inherits')
 var RoomHandler = require('./RoomHandler')
 function DefaultNotificationRoomHandler() {
-    RoomHandler.call(this)
+    DefaultNotificationRoomHandler.super_.call(this)
 }
 inherits(DefaultNotificationRoomHandler, RoomHandler);
 

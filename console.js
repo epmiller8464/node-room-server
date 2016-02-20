@@ -22,6 +22,7 @@ var KCSessionInfo = require('./sdk/internal/DefaultKurentoClientSessionInfo')
 var Room = require('./sdk/internal/Room')
 var RoomManager = require('./sdk/RoomManager')
 var JsonRpcNotificationService = require('./rpc/JsonRpcNotificationService')
+var NotificationRoomHandler = require('./sdk/internal/NotificationRoomHandler')
 var UserParticipant = require('./sdk/api/poco/UserParticipant')
 var uuid = require('node-uuid')
 var c = require('chance')()
@@ -56,11 +57,12 @@ function go() {
     var pid = uuid.v4()
     var username = c.email().split('@')[0]
     var userNotifyService = new JsonRpcNotificationService()
+    var roomHandler = new NotificationRoomHandler(userNotifyService)
     var user = new UserParticipant(pid, username, false)
     //logger.log(util.inspect(user))
     kurento(dockerKmsWsUri, function (error, kurentoClient) {
         //assert(!error, 'Some dumb error create kurentoClient')
-        var room = new Room(roomName, kurentoClient, userNotifyService, false)
+        var room = new Room(roomName, kurentoClient, roomHandler, false)
         //console.log(util.inspect(room))
         room.join(pid, user.getUserName(), true, function (e, publisher) {
             //room.join(pid, user.getUserName(), true, (e, publisher) => {
@@ -89,6 +91,6 @@ function go() {
     })
 }
 
-//go()
+go()
 
 var t = ''

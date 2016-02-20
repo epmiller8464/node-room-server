@@ -6,7 +6,7 @@ var util = require('util')
 var inherits = require('inherits')
 var RoomError = require('../exception/RoomException');
 var Participant = require('./Participant')
-var EventEmitter = require('Events').EventEmitter
+var EventEmitter = require('events').EventEmitter
 
 function noop(error, result) {
     if (error) console.trace(error);
@@ -37,21 +37,21 @@ function Room(roomName, kurentoClient, roomHandler, destroyKurentoClient) {
     self.pipelineReleased = false
     console.log('New room instance named %s', self.name)
 
-    this.on('participantJoined', self.notificationRoomHandler.onParticipantJoined)
-    this.on('participantLeft', self.notificationRoomHandler.onParticipantLeft)
-    this.on('publishMedia', self.notificationRoomHandler.onPublishMedia)
-    this.on('unpublishMedia', self.notificationRoomHandler.onUnpublishMedia)
-    this.on('subscribe', self.notificationRoomHandler.onSubscribe)
-    this.on('unsubscribe', self.notificationRoomHandler.onUnsubscribe)
-    this.on('sendMessage', self.notificationRoomHandler.onSendMessage)
-    this.on('onIceCandidate', self.notificationRoomHandler.onRecvIceCandidate)
-    this.on('closeRoom', self.notificationRoomHandler.onRoomClosed)
-    this.on('evictParticipant', self.notificationRoomHandler.onParticipantEvicted)
+    this.on('participantJoined', self.roomHandler.onParticipantJoined)
+    this.on('participantLeft', self.roomHandler.onParticipantLeft)
+    this.on('publishMedia', self.roomHandler.onPublishMedia)
+    this.on('unpublishMedia', self.roomHandler.onUnpublishMedia)
+    this.on('subscribe', self.roomHandler.onSubscribe)
+    this.on('unsubscribe', self.roomHandler.onUnsubscribe)
+    this.on('sendMessage', self.roomHandler.onSendMessage)
+    this.on('onIceCandidate', self.roomHandler.onRecvIceCandidate)
+    this.on('closeRoom', self.roomHandler.onRoomClosed)
+    this.on('evictParticipant', self.roomHandler.onParticipantEvicted)
 
     //RoomHandler:
-    this.on('gatheredICECandidate', self.notificationRoomHandler.sendIceCandidate)
-    this.on('pipelineError', self.notificationRoomHandler.onPipelineError)
-    this.on('mediaError', self.notificationRoomHandler.onMediaElementError)
+    this.on('gatheredICECandidate', self.roomHandler.onIceCandidate)
+    this.on('pipelineError', self.roomHandler.onPipelineError)
+    this.on('mediaError', self.roomHandler.onMediaElementError)
 }
 
 inherits(Room, EventEmitter)

@@ -3,12 +3,12 @@
  */
 var inherits = require('inherits')
 var RoomHandler = require('./RoomHandler')
-function NotificationRoomHandler() {
+function DefaultNotificationRoomHandler() {
     RoomHandler.call(this)
 }
-inherits(NotificationRoomHandler, RoomHandler);
+inherits(DefaultNotificationRoomHandler, RoomHandler);
 
-//public interface NotificationRoomHandler extends RoomHandler {
+//public interface DefaultNotificationRoomHandler extends RoomHandler {
 
 /**
  * Called as a result of
@@ -27,7 +27,7 @@ inherits(NotificationRoomHandler, RoomHandler);
  *        error message. If not null, then the join was unsuccessful and the
  *        user should be responded accordingly.
  */
-NotificationRoomHandler.prototype.onParticipantJoined = function onParticipantJoined(request, roomName, newUserName, existingParticipants, error) {
+DefaultNotificationRoomHandler.prototype.onParticipantJoined = function onParticipantJoined(request, roomName, newUserName, existingParticipants, error) {
 }
 
 /**
@@ -45,23 +45,8 @@ NotificationRoomHandler.prototype.onParticipantJoined = function onParticipantJo
  *        error message. If not null, then the operation was unsuccessful
  *        and the user should be responded accordingly.
  */
-NotificationRoomHandler.prototype.onParticipantLeft = function onParticipantLeft(request, userName, remainingParticipants, error) {
+DefaultNotificationRoomHandler.prototype.onParticipantLeft = function onParticipantLeft(request, userName, remainingParticipants, error) {
 }
-
-/**
- * Called as a result of
- * {@link NotificationRoomManager#evictParticipant()}
- * (application-originated action). The remaining peers should be notified
- * of this event.
- *
- * @param request instance of {@link ParticipantRequest} POJO to identify
- *        the user and the request
- * @param userName the departing user's name
- * @param remainingParticipants instances of {@link UserParticipant}
- *        representing the remaining participants in the room
- */
-//NotificationRoomHandler.prototype.onParticipantLeft = function onParticipantLeft(userName, remainingParticipants) {
-//}
 
 /**
  * Called as a result of
@@ -80,7 +65,7 @@ NotificationRoomHandler.prototype.onParticipantLeft = function onParticipantLeft
  *        error message. If not null, then the operation was unsuccessful
  *        and the user should be responded accordingly.
  */
-NotificationRoomHandler.prototype.onPublishMedia = function onPublishMedia(request, publisherName, sdpAnswer, participants, error) {
+DefaultNotificationRoomHandler.prototype.onPublishMedia = function onPublishMedia(request, publisherName, sdpAnswer, participants, error) {
 }
 
 /**
@@ -99,7 +84,7 @@ NotificationRoomHandler.prototype.onPublishMedia = function onPublishMedia(reque
  *        error message. If not null, then the operation was unsuccessful
  *        and the user should be responded accordingly.
  */
-NotificationRoomHandler.prototype.onUnpublishMedia = function onUnpublishMedia(request, publisherName, participants, error) {
+DefaultNotificationRoomHandler.prototype.onUnpublishMedia = function onUnpublishMedia(request, publisherName, participants, error) {
 }
 
 /**
@@ -116,7 +101,7 @@ NotificationRoomHandler.prototype.onUnpublishMedia = function onUnpublishMedia(r
  *        error message. If not null, then the operation was unsuccessful
  *        and the user should be responded accordingly.
  */
-NotificationRoomHandler.prototype.onSubscribe = function onSubscribe(request, sdpAnswer, error) {
+DefaultNotificationRoomHandler.prototype.onSubscribe = function onSubscribe(request, sdpAnswer, error) {
 }
 
 /**
@@ -131,7 +116,7 @@ NotificationRoomHandler.prototype.onSubscribe = function onSubscribe(request, sd
  *        error message. If not null, then the operation was unsuccessful
  *        and the user should be responded accordingly.
  */
-NotificationRoomHandler.prototype.onUnsubscribe = function onUnsubscribe(request, error) {
+DefaultNotificationRoomHandler.prototype.onUnsubscribe = function onUnsubscribe(request, error) {
 }
 
 
@@ -153,7 +138,7 @@ NotificationRoomHandler.prototype.onUnsubscribe = function onUnsubscribe(request
  *        error message. If not null, then the operation was unsuccessful
  *        and the user should be responded accordingly.
  */
-NotificationRoomHandler.prototype.onSendMessage = function onSendMessage(request, message, userName, roomName, participants, error) {
+DefaultNotificationRoomHandler.prototype.onSendMessage = function onSendMessage(request, message, userName, roomName, participants, error) {
 }
 
 /**
@@ -168,7 +153,7 @@ NotificationRoomHandler.prototype.onSendMessage = function onSendMessage(request
  *        error message. If not null, then the operation was unsuccessful
  *        and the user should be responded accordingly.
  */
-NotificationRoomHandler.prototype.onRecvIceCandidate = function onRecvIceCandidate(request, error) {
+DefaultNotificationRoomHandler.prototype.onRecvIceCandidate = function onRecvIceCandidate(request, error) {
 }
 
 /**
@@ -182,7 +167,7 @@ NotificationRoomHandler.prototype.onRecvIceCandidate = function onRecvIceCandida
  * @param participants instances of {@link UserParticipant} POJO
  *        representing the peers of the closed room
  */
-NotificationRoomHandler.prototype.onRoomClosed = function onRoomClosed(roomName, participants) {
+DefaultNotificationRoomHandler.prototype.onRoomClosed = function onRoomClosed(roomName, participants) {
 }
 
 /**
@@ -195,7 +180,25 @@ NotificationRoomHandler.prototype.onRoomClosed = function onRoomClosed(roomName,
  * @param participant instance of {@link UserParticipant} POJO representing
  *        the evicted peer
  */
-NotificationRoomHandler.prototype.onParticipantEvicted = function onParticipantEvicted(participant) {
+DefaultNotificationRoomHandler.prototype.onParticipantEvicted = function onParticipantEvicted(participant) {
 }
 
-module.exports = NotificationRoomHandler
+
+DefaultNotificationRoomHandler.prototype.onIceCandidate = function onIceCandidate(roomName, participantId, endPointName, candidate) {
+};
+
+DefaultNotificationRoomHandler.prototype.onMediaElementError = function onMediaElementError(roomName, participantId, errorDescription) {
+};
+
+/**
+ * Called as a result of an error intercepted on the media pipeline. The
+ * affected participants should be notified.
+ *
+ * @param roomName the room where the error occurred
+ * @param participantIds the participants identifiers
+ * @param errorDescription description of the error
+ */
+DefaultNotificationRoomHandler.prototype.onPipelineError = function onPipelineError(roomName, participantIds, errorDescription) {
+};
+
+module.exports = DefaultNotificationRoomHandler

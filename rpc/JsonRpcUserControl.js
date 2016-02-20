@@ -6,9 +6,14 @@
  */
 
 var ProtocolElements = require('../sdk/internal/ProtocolElement')
+var NotificationRoomManager = require('../sdk/NotificationRoomManager')
+/**
+ * Parses and delegates JSON-RPC messages server-side
+ * @constructor
+ */
 function JsonRpcUserControl() {
     var self = this
-    self.roomManager = null
+    self.roomManager = new Notifi
     self.log = null
 }
 

@@ -40,11 +40,19 @@ function Participant(id, name, room, pipeline, web) {
 
 }
 
-Participant.prototype.createPublishingEndpoint = function () {
+Participant.prototype.createPublishingEndpoint = function (cb) {
     var self = this
-    self._publisher.createEndpoint()
-    if (self.getPublisher().getEndpoint() === null)
-        throw new RoomError("Unable to create publisher endpoint", RoomError.Code.MEDIA_ENDPOINT_ERROR_CODE);
+    self._publisher.createEndpoint(function (error, ep) {
+
+
+        if (self.getPublisher().getEndpoint() === null) {
+
+            //throw new RoomError("Unable to create publisher endpoint", RoomError.Code.MEDIA_ENDPOINT_ERROR_CODE);
+            var error = new RoomError("Unable to create publisher endpoint", RoomError.Code.MEDIA_ENDPOINT_ERROR_CODE);
+            return cb(error, null)
+        }
+        return cb(null, ep)
+    })
 }
 
 Participant.prototype.getId = function () {

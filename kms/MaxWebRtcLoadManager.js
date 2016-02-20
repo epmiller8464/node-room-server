@@ -24,11 +24,14 @@ MaxWebRtcLoadManager.prototype.calculateLoad = function (kms) {
     }
 }
 
+
 MaxWebRtcLoadManager.prototype.allowMoreElements = function (kms) {
     var self = this
-    return countWebRtcEndpoints(kms) < self.maxWebRtcPerKms
+    //var n = MaxWebRtcLoadManager.super_.allowMoreElements.call(self)
+    //var n = self.prototype.allowMoreElements.call(self)
+    //return n + n
+    return self._countWebRtcEndpoints(kms) < self.maxWebRtcPerKms
 }
-
 
 MaxWebRtcLoadManager.prototype._countWebRtcEndpoints = function (kms) {
     try {

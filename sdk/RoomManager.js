@@ -1,7 +1,7 @@
 /**
  * Created by ghostmac on 1/12/16.
  */
-
+//var EventEmitter = require('Events').EventEmitter
 var util = require('util')
 var kurento = require('kurento-client');
 var Room = require('./internal/Room')
@@ -9,6 +9,7 @@ var UserParticipant = require('./api/poco/UserParticipant')
 var SdpType = require('./endpoint/SdpType')
 var RoomError = require('./exception/RoomException')
 function RoomManager(roomHandler, kcProvider) {
+    //EventEmitter.call(this)
     var self = this
     self.roomHandler = roomHandler
     self.kcProvider = kcProvider
@@ -327,6 +328,7 @@ RoomManager.prototype.getParticipants = function (roomName) {
     }
     return userParts;
 }
+
 RoomManager.prototype.getPublishers = function (roomName) {
     var self = this
     var r = self.rooms[roomName];
@@ -346,6 +348,7 @@ RoomManager.prototype.getPublishers = function (roomName) {
     }
     return userParts;
 }
+
 RoomManager.prototype.getSubscribers = function (roomName) {
     var self = this
     var r = self.rooms[roomName];
@@ -441,7 +444,8 @@ RoomManager.prototype.createRoom = function (kcSessionInfo) {
     room = new Room(roomName, kc, self.roomHandler, self.kcProvider.destroyWhenUnused())
     self.rooms[roomName] = room
     var kcName = '[NAME NOT AVAILABLE]';
-    if (kc.getServerManager() !== null) {
+    var serverManager = kc.getServerManager()
+    if (serverManager !== null) {
         //kcName = kc.getServerManager(function(s){
         // return s.getName();
         // })
@@ -451,7 +455,6 @@ RoomManager.prototype.createRoom = function (kcSessionInfo) {
     console.log("No room %s exists yet. Created one using KurentoClient %s .", roomName, kcName);
     return room
 }
-
 /**
  *
  * @param roomName
@@ -499,6 +502,7 @@ RoomManager.prototype.getParticipantName = function (participantId) {
     var p = self.getParticipant(participantId)
     return p.getName()
 }
+
 RoomManager.prototype.getParticipantInfo = function (participantId) {
     //noinspection UnterminatedStatementJS
     var self = this

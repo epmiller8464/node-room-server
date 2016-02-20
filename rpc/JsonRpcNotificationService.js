@@ -1,6 +1,6 @@
 var inherits = require('inherits')
 var ParticipantSession = require('./ParticipantSession')
-
+var UserNotificationService = require('../sdk/api/UserNotificationService')
 
 function JsonRpcNotificationService() {
     //private static ConcurrentMap<var , var > sessions = new ConcurrentHashMap<var , var >();

@@ -9,6 +9,8 @@
 // */
 //@Import(JsonRpcConfiguration.class)
 //@SpringBootApplication
+
+var ws = require('ws')
 var RoomJsonRpcHandler = require('./RoomJsonRpcHandler')
 var AutodiscoveryKurentoClientProvider = require('./AutodiscoveryKurentoClientProvider')
 var FixedOneKmsManager = require('./kms/FixedOneKmsManager')
@@ -22,7 +24,7 @@ function KurentoRoomServerApp() {
 
     var self = this
 //	private static JsonRpcNotificationService userNotificationService = new JsonRpcNotificationService();
-    self.userNotificationService = null
+    self.userNotificationService = new JsonRpcNotificationService()
     self.log = null
 }
 
@@ -46,6 +48,7 @@ KurentoRoomServerApp.kmsManager = function () {
         return new FixedOneKmsManager(firstKmsWsUri);
     }
 }
+
 KurentoRoomServerApp.notificationService = function () {
     var self = this
     return self.userNotificationService

@@ -36,8 +36,7 @@ describe('MediaEndpoint', function () {
         var x = new max()
         console.log(util.inspect(x))
         console.log(x.calculateLoad())
-        x = new max()
-        console.log(x.calculateLoad())
+        console.log(x.allowMoreElements())
         done()
     });
 });

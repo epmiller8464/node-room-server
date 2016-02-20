@@ -30,7 +30,7 @@ RoomHandler.prototype.onMediaElementError = function onMediaElementError(roomNam
  * @param participantIds the participants identifiers
  * @param errorDescription description of the error
  */
-RoomHandler.prototype.onPipelineError = function onPipelineError(roomName, participantIds/*[string]*/, errorDescription) {
+RoomHandler.prototype.onPipelineError = function onPipelineError(roomName, participantIds, errorDescription) {
 };
 
 module.exports = RoomHandler

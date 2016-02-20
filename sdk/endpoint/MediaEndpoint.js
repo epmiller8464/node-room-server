@@ -67,22 +67,25 @@ MediaEndpoint.prototype.getEndpoint = function () {
 MediaEndpoint.prototype.getWebEndpoint = function () {
     return this._webRtcEndpoint;
 };
+
 MediaEndpoint.prototype.getRtpEndpoint = function () {
     return this._endpoint;
 };
+
 MediaEndpoint.prototype.getEndpointName = function () {
     return this._endpointName;
 };
+
 MediaEndpoint.prototype.setEndpointName = function (endpointName) {
     this._endpointName = endpointName
 };
 
-MediaEndpoint.prototype.createEndpoint = function () {
+MediaEndpoint.prototype.createEndpoint = function (cb) {
     console.log('createEndpoint');
     var self = this
     var old = self.getEndpoint();
     if (!old) {
-        self.internalEndpointInitialization();
+        self.internalEndpointInitialization(cb);
     } else {
 
         if (self.isWeb()) {
@@ -95,9 +98,11 @@ MediaEndpoint.prototype.createEndpoint = function () {
 
     return old;
 };
+
 MediaEndpoint.prototype.getPipeline = function () {
     return this._pipeline;
 };
+
 /**
  * @param pipeline {MediaPipeline}
  * */
@@ -105,25 +110,30 @@ MediaEndpoint.prototype.setMediaPipeline = function (pipeline) {
     this._pipeline = pipeline;
 
 };
-MediaEndpoint.prototype.unregisterErrorListeners = function () {
+
+MediaEndpoint.unregisterErrorListeners = function () {
     this.unregisterElementErrListener(this._endpoint, this._endpointSubscription);
 };
+
 /**
  * @param muteType {MutedMediaType}
  */
-MediaEndpoint.prototype.mute = function (muteType) {
+MediaEndpoint.mute = function (muteType) {
 };
 
-MediaEndpoint.prototype.unmute = function () {
+MediaEndpoint.unmute = function () {
 };
+
 MediaEndpoint.prototype.getMuteType = function () {
 };
+
 /**
  * @param muteType {MutedMediaType}
  */
 MediaEndpoint.prototype.setMuteType = function (muteType) {
     this._muteType = muteType;
 };
+
 /**
  *
  * @param newMuteType
@@ -157,19 +167,30 @@ MediaEndpoint.prototype.resolveCurrentMuteType = function (newMuteType) {
  * (if needed).
  *
  */
-MediaEndpoint.prototype.internalEndpointInitialization = function () {
+MediaEndpoint.internalEndpointInitialization = function (cb) {
     var self = this;
     if (self.isWeb()) {
 
         self._pipeline.create('WebRtcEndpoint', function (error, webRtcEndpoint) {
             if (error) {
                 //return callback(error, null);
-                throw new Error(error);
+                //throw new Error(error);
+                return cb(error, null)
             }
 
             self._webRtcEndpoint = webRtcEndpoint;
-            self._endpointSubscription = self.registerElemErrListener(webRtcEndpoint);
+            //self._endpointSubscription = self.registerElemErrListener(webRtcEndpoint);
             console.log("EP %s: Created a new WebRtcEndpoint", self._endpointName);
+            return cb(null, self._webRtcEndpoint )
+            //self.registerOnIceCandidateEventListener()
+            //webRtcEndpoint.on('OnIceCandidate', function (event) {
+            //    var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
+            //    ws.send(JSON.stringify({
+            //        id: 'iceCandidate',
+            //        candidate: candidate,
+            //        sessionId: sessionId
+            //    }));
+            //});
         });
     } else {
         self._pipeline.create('RtpEndpoint', function (error, endpoint) {
@@ -199,6 +220,7 @@ MediaEndpoint.prototype.registerElemErrListener = function (element) {
     var listener = this._owner.sendMediaError;
     return element.on('Error', listener)
 };
+
 /**
  *
  * @param element
@@ -211,6 +233,7 @@ MediaEndpoint.prototype.unregisterElementErrListener = function (element, subscr
 
     element.removeListener('Error', subscription)
 };
+
 /**
  *
  * @param offer {String}
@@ -314,7 +337,6 @@ MediaEndpoint.prototype.processAnswer = function (answer, cb) {
     }
 };
 
-
 /**
  *
  * @param candidate
@@ -334,7 +356,6 @@ MediaEndpoint.prototype.addIceCandidate = function (candidate, cb) {
         self.internalAddIceCandidate(candidate, cb)
     }
 };
-
 
 MediaEndpoint.prototype.registerOnIceCandidateEventListener = function () {
     var self = this;

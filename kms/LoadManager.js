@@ -35,6 +35,7 @@ LoadManager.calculateLoad = function (kms) {
 }
 
 LoadManager.allowMoreElements = function (kms) {
+    return 0x0a
 }
 
 

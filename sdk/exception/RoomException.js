@@ -5,20 +5,20 @@
 var inherits = require('inherits');
 //Error
 function RoomError(msg, code) {
-    RoomError._super.call(this)
+    RoomError.super_.call(this,msg)
     var self = this
-    self._serialVersionUID = 1,
-        self._code = Code.GENERIC_ERROR_CODE
+    self._serialVersionUID = 1
+    self._code = RoomError.Code.GENERIC_ERROR_CODE
 
 }
-
+inherits(RoomError, Error)
 
 RoomError.prototype.getCode = function () {
     return this._code;
 }
 
-RoomError.toString = function () {
-    return 'Code: ' + this.getCode() + ' ' + this.prototype.toString();
+RoomError.prototype.toString = function () {
+    return 'Code: ' + this.getCode() + ' ' + RoomError.super_.toString.call(self)
 }
 
 RoomError.Code = {
@@ -48,9 +48,6 @@ RoomError.Code = {
     USER_NOT_FOUND_ERROR_CODE: 102,
     USER_GENERIC_ERROR_CODE: 101
 }
-
-inherits(RoomError, Error)
-
 
 
 module.exports = RoomError

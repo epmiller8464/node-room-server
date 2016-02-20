@@ -2,19 +2,37 @@
  * Created by ghostmac on 1/12/16.
  */
 var util = require('util')
-var DefaultNotificationRoomHandler = require('./internal/DefaultNotificationRoomHandler')
+var inherits = require('inherits')
+var EventEmitter = require('Events').EventEmitter
+var NotificationRoomHandler = require('./internal/NotificationRoomHandler')
 var KurentoClientSessionInfo = require('./internal/DefaultKurentoClientSessionInfo')
 var RoomManager = require('./RoomManager')
-//var MutedMediaType = require('./api/MutedMediaType')
 var RoomError = require('./exception/RoomException')
+
+/**
+ * Delegates requests to internalManager:RoomManager
+ * Emits events handled by NotificationRoomHandler
+ * @param notificationService
+ * @param kcProvider
+ * @constructor
+ */
 function NotificationRoomManager(notificationService, kcProvider) {
     var self = this
 
-    self.notificationRoomHandler = new DefaultNotificationRoomHandler(notificationService)
+    self.notificationRoomHandler = new NotificationRoomHandler(notificationService)
     self.internalManager = new RoomManager(self.notificationRoomHandler, kcProvider)
 
 }
 
+inherits(NotificationRoomManager, EventEmitter)
+
+/**
+ *
+ * @param userName
+ * @param roomName
+ * @param webParticipant
+ * @param request
+ */
 NotificationRoomManager.prototype.joinRoom = function (userName, roomName, webParticipant, request) {
     var self = this
     var existingParticipants = null

@@ -38,22 +38,24 @@ function PublisherEndpoint(endpointConfig) {
 
 inherits(PublisherEndpoint, MediaEndpoint);
 
-PublisherEndpoint.prototype.internalEndpointInitialization = function () {
+PublisherEndpoint.prototype.internalEndpointInitialization = function (cb) {
     var self = this;
-    PublisherEndpoint.super_.internalEndpointInitialization.call(this);
+    PublisherEndpoint.super_.internalEndpointInitialization.call(this, function (error, endpoint) {
 
-    self._pipeline.create('PassThrough', function (error, passThrough) {
-        if (error) {
-            //return callback(error, null);
-            throw new Error(error);
-        }
+        console.log(error, endpoint)
+        self._pipeline.create('PassThrough', function (error, passThrough) {
+            if (error) {
+                return cb(error, null);
+                //throw new Error(error);
+            }
 
-        self._passThru = passThrough;
-        self._passThruSubscription = self.registerElemErrListener(self._passThru);
-        console.log("EP %s: Created a new PassThrough");
+            self._passThru = passThrough;
+            //self._passThruSubscription = self.registerElemErrListener(self._passThru);
+            console.log("EP %s: Created a new PassThrough");
+            return cb(null, endpoint);
+        });
     });
 };
-
 
 PublisherEndpoint.prototype.unregisterErrorListeners = function () {
     var self = this;
@@ -75,8 +77,6 @@ PublisherEndpoint.prototype.getMediaElements = function () {
     }
     return this._elements
 }
-
-
 
 PublisherEndpoint.prototype.mute = function (muteType) {
     var self = this
@@ -105,7 +105,6 @@ PublisherEndpoint.prototype.mute = function (muteType) {
     }
     self.resolveCurrentMuteType(muteType);
 }
-
 
 PublisherEndpoint.prototype.unmute = function () {
     var self = this
@@ -139,8 +138,6 @@ PublisherEndpoint.prototype.getPrevious = function (uid) {
         return null
     return self._elementIds[idx - 1];
 }
-
-
 /**
  *
  * @param sdpType {String}
@@ -149,7 +146,6 @@ PublisherEndpoint.prototype.getPrevious = function (uid) {
  * @param loopbackAltSrc {MediaElement}
  * @param loopbackConnType {MediaType}
  */
-
 PublisherEndpoint.prototype.publish = function (sdpType,
                                                 sdpString,
                                                 doLoopback,
@@ -172,10 +168,10 @@ PublisherEndpoint.prototype.publish = function (sdpType,
     var sdpResponse = null
     switch (sdpType.toUpperCase()) {
         case SdpType.ANSWER:
-            sdpResponse = self.processAnswer(sdpString,cb)
+            sdpResponse = self.processAnswer(sdpString, cb)
             break
         case SdpType.OFFER:
-            sdpResponse = self.processOffer(sdpString,cb)
+            sdpResponse = self.processOffer(sdpString, cb)
             break
         default:
             throw new RoomError('Cannot publish SdpType: %s ' + sdpType + ')', RoomError.Code.MEDIA_WEBRTC_ENDPOINT_ERROR_CODE);

@@ -6,76 +6,48 @@
 
 function JsonRpcHandler() {
     var self = this
-    //private final Logger log = LoggerFactory.getLogger(DefaultJsonRpcHandler.class);
-    self.log = null;
-    self.useSockJs = false;
-    self.label = '';
-    self.pingWatchdog = false;
-    self.allowedOrigins = [];
-}
-JsonRpcHandler.prototype.handleRequest = function (transaction, request) {}
-
-JsonRpcHandler.afterConnectionEstablished = function (session) {}
-
-JsonRpcHandler.afterConnectionClosed = function (session, status) {}
-
-JsonRpcHandler.handleTransportError = function (session, exception) {
-    //var self = this
-    console.log('Transport error. Exception %s, Session: %s', exception, session)
 }
 
-JsonRpcHandler.handleUncaughtException = function (session, exception) {
-    var self = this
-    console.log('Uncaught exception in handler %s, %s', self.getHandlerType(), exception);
+JsonRpcHandler.prototype.handleRequest = function (transaction, request) {
 }
 
-JsonRpcHandler.getHandlerType = function () {
-    var self = this
-    //return self.getClass();
-    return 'JsonRpcHandler'
+JsonRpcHandler.prototype.afterConnectionEstablished = function (session) {
 }
 
-JsonRpcHandler.withSockJS = function () {
-    var self = this
-    self.useSockJs = true;
-    return this;
+JsonRpcHandler.prototype.afterConnectionClosed = function (session, status) {
 }
 
-JsonRpcHandler.isSockJSEnabled = function () {
-    var self = this
-    return self.useSockJs;
+JsonRpcHandler.prototype.handleTransportError = function (session, exception) {
 }
 
-JsonRpcHandler.withAllowedOrigins = function (origins) {
-    var self = this
-
-    self.allowedOrigins = new Arrary(origins);
-    return self;
+JsonRpcHandler.prototype.handleUncaughtException = function (session, exception) {
 }
 
-JsonRpcHandler.allowedOrigins = function () {
-    var self = this
-    return self.allowedOrigins;
+JsonRpcHandler.prototype.getHandlerType = function () {
 }
 
-JsonRpcHandler.withLabel = function (label) {
-    var self = this
-    self.label = label;
-    return self;
+JsonRpcHandler.prototype.withSockJS = function () {
 }
 
-JsonRpcHandler.getLabel = function () {
-    var self = this
-    return self.label;
+JsonRpcHandler.prototype.isSockJSEnabled = function () {
 }
 
-JsonRpcHandler.withPingWatchdog = function (pingAsWachdog) {
-    var self = this
-    self.pingWatchdog = pingAsWachdog;
-    return self;
+JsonRpcHandler.prototype.withAllowedOrigins = function (origins) {
 }
 
-JsonRpcHandler.isPingWatchdog = function () {
-    var self = this
-    return self.pingWatchdog;
+JsonRpcHandler.prototype.allowedOrigins = function () {
 }
+
+JsonRpcHandler.prototype.withLabel = function (label) {
+}
+
+JsonRpcHandler.prototype.getLabel = function () {
+}
+
+JsonRpcHandler.prototype.withPingWatchdog = function (pingAsWachdog) {
+}
+
+JsonRpcHandler.prototype.isPingWatchdog = function () {
+}
+
+module.exports = JsonRpcHandler

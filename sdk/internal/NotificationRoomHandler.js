@@ -7,15 +7,20 @@
 
 var debug = require('debug')('node-room-server:DefaultNotificationRoomHandler');
 var inherits = require('inherits');
-var NotificationRoomHandler = require('../api/NotificationRoomHandler');
+var DefaultNotificationRoomHandler = require('../api/DefaultNotificationRoomHandler');
 var ProtocolElement = require('./ProtocolElement');
 
-function DefaultNotificationRoomHandler(userNotificationService) {
+/**
+ *
+ * @param userNotificationService {JsonRpcNotificationService}
+ * @constructor
+ */
+function NotificationRoomHandler(userNotificationService) {
     var self = this;
-    DefaultNotificationRoomHandler.super_.call(self);
+    NotificationRoomHandler.super_.call(self);
     self._userNotificationService = userNotificationService
 }
-inherits(DefaultNotificationRoomHandler, NotificationRoomHandler);
+inherits(NotificationRoomHandler, DefaultNotificationRoomHandler);
 
 
 /**
@@ -35,7 +40,7 @@ inherits(DefaultNotificationRoomHandler, NotificationRoomHandler);
  *        error message. If not null, then the join was unsuccessful and the
  *        user should be responded accordingly.
  */
-DefaultNotificationRoomHandler.prototype.onParticipantJoined = function (request, roomName, newUserName, existingParticipants, error) {
+NotificationRoomHandler.prototype.onParticipantJoined = function (request, roomName, newUserName, existingParticipants, error) {
     var self = this
     if (error) {
         self._userNotificationService.sendErrorResponse(request, null, error)
@@ -75,7 +80,7 @@ DefaultNotificationRoomHandler.prototype.onParticipantJoined = function (request
  *        error message. If not null, then the operation was unsuccessful
  *        and the user should be responded accordingly.
  */
-DefaultNotificationRoomHandler.prototype.onParticipantLeft = function (request, userName, remainingParticipants, error) {
+NotificationRoomHandler.prototype.onParticipantLeft = function (request, userName, remainingParticipants, error) {
     var self = this
     if (error && request) {
         self._userNotificationService.sendErrorResponse(request, null, error)
@@ -96,21 +101,6 @@ DefaultNotificationRoomHandler.prototype.onParticipantLeft = function (request, 
 
 /**
  * Called as a result of
- * {@link NotificationRoomManager#evictParticipant()}
- * (application-originated action). The remaining peers should be notified
- * of this event.
- *
- * @param request instance of {@link ParticipantRequest} POJO to identify
- *        the user and the request
- * @param userName the departing user's name
- * @param remainingParticipants instances of {@link UserParticipant}
- *        representing the remaining participants in the room
- */
-//DefaultNotificationRoomHandler.prototype.onParticipantLeft = function onParticipantLeft(userName, remainingParticipants) {
-//}
-
-/**
- * Called as a result of
  * {@link NotificationRoomManager#publishMedia(, ParticipantRequest, MediaElement...)}
  * . The user should receive the generated SPD answer from the local WebRTC
  * endpoint, and the other peers should be notified of this event.
@@ -126,7 +116,7 @@ DefaultNotificationRoomHandler.prototype.onParticipantLeft = function (request, 
  *        error message. If not null, then the operation was unsuccessful
  *        and the user should be responded accordingly.
  */
-DefaultNotificationRoomHandler.prototype.onPublishMedia = function (request, publisherName, sdpAnswer, participants, error) {
+NotificationRoomHandler.prototype.onPublishMedia = function (request, publisherName, sdpAnswer, participants, error) {
     var self = this
     if (error) {
         self._userNotificationService.sendErrorResponse(request, null, error)
@@ -166,7 +156,7 @@ DefaultNotificationRoomHandler.prototype.onPublishMedia = function (request, pub
  *        error message. If not null, then the operation was unsuccessful
  *        and the user should be responded accordingly.
  */
-DefaultNotificationRoomHandler.prototype.onUnpublishMedia = function (request, publisherName, participants, error) {
+NotificationRoomHandler.prototype.onUnpublishMedia = function (request, publisherName, participants, error) {
     var self = this
     if (error) {
         self._userNotificationService.sendErrorResponse(request, null, error)
@@ -200,7 +190,7 @@ DefaultNotificationRoomHandler.prototype.onUnpublishMedia = function (request, p
  *        error message. If not null, then the operation was unsuccessful
  *        and the user should be responded accordingly.
  */
-DefaultNotificationRoomHandler.prototype.onSubscribe = function (request, sdpAnswer, error) {
+NotificationRoomHandler.prototype.onSubscribe = function (request, sdpAnswer, error) {
     var self = this
     if (error) {
         self._userNotificationService.sendErrorResponse(request, null, error)
@@ -226,7 +216,7 @@ DefaultNotificationRoomHandler.prototype.onSubscribe = function (request, sdpAns
  *        error message. If not null, then the operation was unsuccessful
  *        and the user should be responded accordingly.
  */
-DefaultNotificationRoomHandler.prototype.onUnsubscribe = function (request, error) {
+NotificationRoomHandler.prototype.onUnsubscribe = function (request, error) {
     var self = this
     if (error) {
         self._userNotificationService.sendErrorResponse(request, null, error)
@@ -254,7 +244,7 @@ DefaultNotificationRoomHandler.prototype.onUnsubscribe = function (request, erro
  *        error message. If not null, then the operation was unsuccessful
  *        and the user should be responded accordingly.
  */
-DefaultNotificationRoomHandler.prototype.onSendMessage = function (request, message, userName, roomName, participants, error) {
+NotificationRoomHandler.prototype.onSendMessage = function (request, message, userName, roomName, participants, error) {
     var self = this
     if (error) {
         self._userNotificationService.sendErrorResponse(request, null, error)
@@ -284,7 +274,7 @@ DefaultNotificationRoomHandler.prototype.onSendMessage = function (request, mess
  *        error message. If not null, then the operation was unsuccessful
  *        and the user should be responded accordingly.
  */
-DefaultNotificationRoomHandler.prototype.onRecvIceCandidate = function (request, error) {
+NotificationRoomHandler.prototype.onRecvIceCandidate = function (request, error) {
     var self = this
     if (error) {
         self._userNotificationService.sendErrorResponse(request, null, error)
@@ -304,7 +294,7 @@ DefaultNotificationRoomHandler.prototype.onRecvIceCandidate = function (request,
  * @param participants instances of {@link UserParticipant} POJO
  *        representing the peers of the closed room
  */
-DefaultNotificationRoomHandler.prototype.onRoomClosed = function (roomName, participants) {
+NotificationRoomHandler.prototype.onRoomClosed = function (roomName, participants) {
     var self = this
 
     var notifyParams = {}
@@ -326,7 +316,7 @@ DefaultNotificationRoomHandler.prototype.onRoomClosed = function (roomName, part
  * @param participant instance of {@link UserParticipant} POJO representing
  *        the evicted peer
  */
-DefaultNotificationRoomHandler.prototype.onParticipantEvicted = function (participant) {
+NotificationRoomHandler.prototype.onParticipantEvicted = function (participant) {
     var self = this
     self._userNotificationService.sendNotification(participant.getParticipantId(), ProtocolElement.PARTICIPANTEVICTED_METHOD, {})
 };
@@ -340,7 +330,7 @@ DefaultNotificationRoomHandler.prototype.onParticipantEvicted = function (partic
  * @param participantId identifier of the participant
  * @param errorDescription description of the error
  */
-DefaultNotificationRoomHandler.prototype.onIceCandidate = function (roomName, participantId, endPointName, candidate) {
+NotificationRoomHandler.prototype.onIceCandidate = function (roomName, participantId, endPointName, candidate) {
     var self = this
     var params = {}
     params[ProtocolElement.ICECANDIDATE_EPNAME_PARAM] = endPointName
@@ -350,7 +340,7 @@ DefaultNotificationRoomHandler.prototype.onIceCandidate = function (roomName, pa
     self._userNotificationService.sendNotification(participantId, ProtocolElement.ICECANDIDATE_METHOD, params)
 };
 
-DefaultNotificationRoomHandler.prototype.onMediaElementError = function (roomName, participantId, errorDescription) {
+NotificationRoomHandler.prototype.onMediaElementError = function (roomName, participantId, errorDescription) {
     var self = this
     var notifyParams = {}
     notifyParams[ProtocolElement.MEDIAERROR_ERROR_PARAM] = errorDescription
@@ -365,7 +355,7 @@ DefaultNotificationRoomHandler.prototype.onMediaElementError = function (roomNam
  * @param participantIds the participants identifiers
  * @param errorDescription description of the error
  */
-DefaultNotificationRoomHandler.prototype.onPipelineError = function (roomName, participantIds/*[string]*/, errorDescription) {
+NotificationRoomHandler.prototype.onPipelineError = function (roomName, participantIds/*[string]*/, errorDescription) {
     var self = this
     var notifyParams = {}
     notifyParams[ProtocolElement.MEDIAERROR_ERROR_PARAM] = errorDescription
@@ -376,4 +366,4 @@ DefaultNotificationRoomHandler.prototype.onPipelineError = function (roomName, p
 };
 
 
-module.exports = DefaultNotificationRoomHandler
+module.exports = NotificationRoomHandler

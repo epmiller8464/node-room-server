@@ -9,30 +9,30 @@ var DefaultKurentoClientSessionInfo = require('../api/DefaultKurentoClientSessio
 function KurentoClientSessionInfo(participantId, roomName) {
     var self = this
     KurentoClientSessionInfo.super_.call(self)
-    self._participantId = participantId
-    self._roomName = roomName
+    self.participantId = participantId
+    self.roomName = roomName
 }
 
 inherits(KurentoClientSessionInfo, DefaultKurentoClientSessionInfo)
 
 KurentoClientSessionInfo.prototype.getParticipantId = function () {
     var self = this
-    return self._participantId
+    return self.participantId
 }
 
 KurentoClientSessionInfo.prototype.setParticipantId = function (pid) {
     var self = this
-    self._participantId = pid
+    self.participantId = pid
 }
 
 KurentoClientSessionInfo.prototype.getRoomName = function () {
     var self = this
-    return self._roomName
+    return self.roomName
 }
 
 KurentoClientSessionInfo.prototype.setRoomName = function (roomName) {
     var self = this
-    self._roomName = roomName
+    self.roomName = roomName
 }
 
 

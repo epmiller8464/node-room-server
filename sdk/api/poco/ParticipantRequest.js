@@ -27,24 +27,24 @@ var util = require('util');
 
 function ParticipantRequest(participantId, requestId) {
     var self = this;
-    self._participantId = participantId;
-    self._requestId = requestId;
+    self.participantId = participantId;
+    self.requestId = requestId;
 }
 
 ParticipantRequest.prototype.getRequestId = function getRequestId() {
-    return this._requestId;
+    return this.requestId;
 };
 
 ParticipantRequest.prototype.setRequestId = function setRequestId(id) {
-    this._requestId = id;
+    this.requestId = id;
 };
 
 ParticipantRequest.prototype.getParticipantId = function getParticipantId() {
-    return this._participantId;
+    return this.participantId;
 };
 
 ParticipantRequest.prototype.setParticipantId = function setParticipantId(participantId) {
-    this._participantId = participantId;
+    this.participantId = participantId;
 };
 
 ParticipantRequest.prototype.hashCode = function hashCode() {
@@ -66,11 +66,11 @@ ParticipantRequest.prototype.hashCode = function hashCode() {
 ParticipantRequest.prototype.toString = function toString() {
     var self = this;
     var parts = [];
-    if (self._requestId) {
-        parts.push(util.format('requestId=%s', self._requestId));
+    if (self.requestId) {
+        parts.push(util.format('requestId=%s', self.requestId));
     }
-    if (self._participantId) {
-        parts.push(util.format('participantId=%s', self._participantId));
+    if (self.participantId) {
+        parts.push(util.format('participantId=%s', self.participantId));
     }
 
     return util.format('[%s]', parts.join(','));

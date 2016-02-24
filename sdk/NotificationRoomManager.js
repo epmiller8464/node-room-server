@@ -46,7 +46,9 @@ NotificationRoomManager.prototype.joinRoom = function (userName, roomName, webPa
     }
 
     if (existingParticipants) {
-        self.notificationRoomHandler.onParticipantJoined(request, roomName, userName, existingParticipants, null)
+        //self.notificationRoomHandler.onParticipantJoined(request, roomName, userName, existingParticipants, null)
+        console.log('Participant: %s  joining room %s.', userName, roomName)
+
     }
 }
 NotificationRoomManager.prototype.leaveRoom = function (request) {
@@ -79,7 +81,17 @@ NotificationRoomManager.prototype.publishMedia = function (request, isOffer, sdp
         userName = self.internalManager.getParticipantName(pid)
         roomName = self.internalManager.getRoomName(pid)
         participants = self.internalManager.getParticipants(roomName);
-        sdpAnswer = self.internalManager.publishMedia(pid, isOffer, sdp, loopbackAltSrc, loopbackConnType, doLoopback, mediaElements)
+        sdpAnswer = self.internalManager.publishMedia(
+            pid,
+            isOffer,
+            sdp,
+            loopbackAltSrc,
+            loopbackConnType,
+            doLoopback,
+            mediaElements,
+            function () {
+
+            })
     } catch (roomError) {
         console.log('Participant: %s Error publishing media : %s', userName, roomError)
         self.notificationRoomHandler.onPublishMedia(request, null, null, null, roomError)

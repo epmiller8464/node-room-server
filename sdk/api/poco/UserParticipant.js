@@ -7,17 +7,17 @@ var util = require('util')
 
 function UserParticipant(participantId, userName, streaming) {
     var self = this;
-    self._participantId = participantId;
+    self.participantId = participantId;
     self._userName = userName;
     self._streaming = streaming || false;
 }
 
 UserParticipant.prototype.getParticipantId = function getParticipantId() {
-    return this._participantId;
+    return this.participantId;
 };
 
 UserParticipant.prototype.setParticipantId = function setParticipantId(participantId) {
-    this._participantId = participantId;
+    this.participantId = participantId;
 };
 
 UserParticipant.prototype.getUserName = function getUserName() {
@@ -60,8 +60,8 @@ UserParticipant.prototype.toString = function toString() {
     var self = this;
     var parts = [];
     //var builder = '[';
-    if (self._participantId)
-        parts.push(util.format('participantId=%s', self._participantId));
+    if (self.participantId)
+        parts.push(util.format('participantId=%s', self.participantId));
     //util.format('?limit=%s', limit);
     if (self._userName)
         parts.push(util.format('userName=%s', self._userName));

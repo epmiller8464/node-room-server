@@ -1,4 +1,5 @@
 var inherits = require('inherits')
+var util = require('util')
 /**
  * Participant information that should be stored in the WebSocket session.
  *
@@ -35,15 +36,16 @@ ParticipantSession.prototype.setRoomName = function (roomName) {
 }
 
 ParticipantSession.prototype.toString = function () {
-    //StringBuilder builder = new StringBuilder();
-    //builder.append("[");
-    //if (participantName != null)
-    //    builder.append("participantName=").append(participantName)
-    //        .append(", ");
-    //if (roomName != null)
-    //    builder.append("roomName=").append(roomName);
-    //builder.append("]");
-    //return builder.toString();
+
+    var self = this
+    var data = []
+    if (self.participantName && self.participantName.length) {
+        data.push(util.format('participantName=%s', self.participantName))
+    }
+    if (self.roomName && self.roomName.length) {
+        data.push(util.format('roomName=%s', self.roomName))
+    }
+    return util.format('[%s]', data.join((data.length > 1 ? ',' : '')));
 
 }
 

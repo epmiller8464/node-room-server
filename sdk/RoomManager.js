@@ -41,10 +41,22 @@ RoomManager.prototype.joinRoom = function (userName,
             console.log(msg)
             throw new RoomError(msg, RoomError.Code.ROOM_CLOSED_ERROR_CODE)
         }
-        var existingParticipants = self.getParticipants(roomName)
-        room.join(pid, userName, webParticipant)
-        return existingParticipants
     }
+    var existingParticipants = self.getParticipants(roomName)
+    room.join(pid, userName, webParticipant, function (error, participant) {
+
+        if (error) {
+
+            console.log(util.format('%s is trying to join room %s but an error occurred: %s.', userName, roomName, error))
+        }
+        if (participant) {
+            console.log(util.format('%s joined room %s.', userName, roomName))
+
+        }
+        //cb(error, participant)
+    })
+    return existingParticipants
+
 }
 
 RoomManager.prototype.leaveRoom = function (participantId) {
@@ -81,7 +93,8 @@ RoomManager.prototype.publishMedia = function (participantId,
                                                loopbackAltSrc,
                                                loopbackConnType,
                                                doLoopback,
-                                               mediaElements) {
+                                               mediaElements,
+                                               cb) {
     var self = this
     console.log('Request [PUBLISH_MEDIA] isOffer=%s sdp=%s loopbackAltSrc=%s loopbackConnType=%s doLoopback=%s mediaElements=%s (%s)',
         isOffer, sdp, loopbackAltSrc === null, loopbackConnType, doLoopback, mediaElements, participantId);
@@ -90,20 +103,27 @@ RoomManager.prototype.publishMedia = function (participantId,
     var participant = self.getParticipant(participantId);
     var name = participant.getName();
     var room = participant.getRoom();
-    participant.createPublishingEndpoint();
+    participant.createPublishingEndpoint(function (error, endPoint) {
+        //publisher.createPublishingEndpoint(function (error, result) {
+        console.log(error, endPoint)
 
-    for (var i = 0; i < mediaElements.length; i++) {
-        var elem = mediaElements[i]
-        participant.getPublisher().apply(elem);
-    }
 
-    var sdpResponse = participant.publishToRoom(sdpType, sdp, doLoopback, loopbackAltSrc, loopbackConnType);
-    var msg = 'Error generating SDP response for publishing user: ' + name;
-    if (!sdpResponse)
-        throw new RoomError(msg, RoomError.Code.MEDIA_SDP_ERROR_CODE)
+        if (error) {
+        }
 
-    room.newPublisher(participant);
-    return sdpResponse;
+        for (var i = 0; i < mediaElements.length; i++) {
+            var elem = mediaElements[i]
+            participant.getPublisher().apply(elem);
+        }
+
+        var sdpResponse = participant.publishToRoom(sdpType, sdp, doLoopback, loopbackAltSrc, loopbackConnType);
+        var msg = 'Error generating SDP response for publishing user: ' + name;
+        if (!sdpResponse)
+            throw new RoomError(msg, RoomError.Code.MEDIA_SDP_ERROR_CODE)
+
+        room.newPublisher(participant);
+        return cb(null, sdpResponse)
+    });
 }
 
 RoomManager.prototype.generatePublishOffer = function (participantId) {
@@ -112,12 +132,17 @@ RoomManager.prototype.generatePublishOffer = function (participantId) {
     var participant = self.getParticipant(participantId);
     var name = participant.getName();
     var room = participant.getRoom();
-    participant.createPublishingEndpoint();
-    var sdpOffer = participant.preparePublishConnection()
-    if (!sdpOffer)
-        throw new RoomError('Error generating SDP offer for publishing user ' + name, RoomError.Code.MEDIA_SDP_ERROR_CODE)
-    room.newPublisher(participant)
-    return sdpOffer
+    participant.createPublishingEndpoint(function (error, endpoint) {
+
+        participant.preparePublishConnection(function (error, sdpOffer) {
+
+            if (!sdpOffer)
+                throw new RoomError('Error generating SDP offer for publishing user ' + name, RoomError.Code.MEDIA_SDP_ERROR_CODE)
+            room.newPublisher(participant)
+            return sdpOffer
+
+        })
+    });
 }
 
 RoomManager.prototype.unpublishMedia = function (participantId) {
@@ -445,7 +470,7 @@ RoomManager.prototype.createRoom = function (kcSessionInfo, cb) {
     self.rooms[roomName] = room
     var kcName = '[NAME NOT AVAILABLE]';
     //var sm = kc.getServerManager().then().getName()
-   //xs kcName = sm.getName()
+    //xs kcName = sm.getName()
     console.log(util.inspect(kc.getServerManager()))
     //kc.getServerManager(function (manager) {
     //

@@ -49,7 +49,7 @@ describe('UserParticipant', function () {
         //console.log(pr.hashCode())
         //console.log(pr2.equals(pr))
         assert(!ur2.equals(ur))
-        ur2.setParticipantId(ur2._participantId >> 1)
+        ur2.setParticipantId(ur2.participantId >> 1)
         assert(ur2.equals(ur))
         assert(!ur.equals(new ParticipantRequest(pid, uid, true)))
 

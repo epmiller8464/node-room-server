@@ -44,7 +44,6 @@ Participant.prototype.createPublishingEndpoint = function (cb) {
     var self = this
     self._publisher.createEndpoint(function (error, ep) {
 
-
         if (self.getPublisher().getEndpoint() === null) {
 
             //throw new RoomError("Unable to create publisher endpoint", RoomError.Code.MEDIA_ENDPOINT_ERROR_CODE);
@@ -125,16 +124,17 @@ Participant.prototype.getConnectedSubscribedEndpoints = function () {
     }
     return endPoints
 }
-Participant.prototype.preparePublishConnection = function () {
+Participant.prototype.preparePublishConnection = function (cb) {
     var self = this
     //var subscribedToSet = []
-    console.log('USER %s: Request to publish video in room %s by'
-        + 'initiating connection from server', self.getName(), self._room.getName());
+    console.log('USER %s: Request to publish video in room %s by' + 'initiating connection from server', self.getName(), self._room.getName());
 
-    var sdpOffer = self.getPublisher().preparePublishConnection()
-    console.trace('USER %s: Publishing SdpOffer is %s', self._name, sdpOffer)
-    console.info('USER %s: Generated Sdp offer for publishing in room %s', self.getName(), self._room.getName())
-    return sdpOffer
+    self.getPublisher().preparePublishConnection(function (error, result) {
+        var sdpOffer = result
+        console.trace('USER %s: Publishing SdpOffer is %s', self._name, sdpOffer)
+        console.info('USER %s: Generated Sdp offer for publishing in room %s', self.getName(), self._room.getName())
+        return cb(error, sdpOffer)
+    })
 }
 
 Participant.prototype.publishToRoom = function (sdpType, sdpString, doLoopback, loopbackAltSrc, loopbackConnType) {

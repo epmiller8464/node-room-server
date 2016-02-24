@@ -25,11 +25,12 @@ var JsonRpcNotificationService = require('./rpc/JsonRpcNotificationService')
 var NotificationRoomHandler = require('./sdk/internal/NotificationRoomHandler')
 var NotificationRoomManager = require('./sdk/NotificationRoomManager')
 var UserParticipant = require('./sdk/api/poco/UserParticipant')
+var ParticipantRequest = require('./sdk/api/poco/ParticipantRequest')
 var FixedOneKmsManager = require('./kms/FixedOneKmsManager')
 var Kms = require('./kms/Kms')
 var uuid = require('node-uuid')
 var c = require('chance')()
-
+var faker = require('faker')
 var dockerKmsHostIp = '192.168.99.100'
 var dockerKmsHostPort = '8888'
 var dockerKmsWsUri = util.format('ws://%s:%s/kurento', dockerKmsHostIp, dockerKmsHostPort)
@@ -57,23 +58,27 @@ function go() {
     //    return x * 2
     //}
     var roomName = uuid.v4()
-    var pid = uuid.v4()
     var username = c.email().split('@')[0]
     var userNotifyService = new JsonRpcNotificationService()
     var roomHandler = new NotificationRoomHandler(userNotifyService)
-    var user = new UserParticipant(pid, username, false)
     //logger.log(util.inspect(user))
     kurento(dockerKmsWsUri, function (error, kurentoClient) {
-        logger.log(util.inspect(kurentoClient.getServerManager().getName()))
+        //logger.log(util.inspect(kurentoClient.getServerManager().getName()))
         //function () {
         //
         //})
+        var pid = uuid.v4()
+        var roomName = uuid.v4()
+        var requestId = faker.random.number(1024)
+        //var user = new UserParticipant(pid, username, false)
         var kms = new FixedOneKmsManager()//dockerKmsWsUri, kurentoClient)
         kms.addKms(new Kms(kurentoClient, dockerKmsWsUri))
 
         //var room = new Room(roomName, kurentoClient, roomHandler, false)
         var rmMgr = new NotificationRoomManager(userNotifyService, kms)
-        var room = rmMgr.createRoom(new KCSessionInfo(pid, 'test'))
+        var room = rmMgr.createRoom(new KCSessionInfo(pid, roomName))
+
+        rmMgr.joinRoom(username, roomName, true, new ParticipantRequest(pid, requestId))
         logger.log(util.inspect(room))
     })
     //console.log(util.inspect(room))
@@ -81,20 +86,18 @@ function go() {
     //    //room.join(pid, user.getUserName(), true, (e, publisher) => {
     //    //should(e).equal(null)
     //    //logger.log(e, newUser)
-    //    publisher.createPublishingEndpoint(function (error, result) {
+    //publisher.createPublishingEndpoint(function (error, result) {
     //
-    //        logger.log(error, result)
-    //        if (error) {
-    //        }
-    //        result.processOffer(stream, function (error, answer) {
+    //    logger.log(error, result)
+    //    if (error) {
+    //    }
+    //    result.processOffer(stream, function (error, answer) {
     //
-    //            logger.log(error, answer)
-    //            if (error) throw error
-    //
-    //        })
+    //        logger.log(error, answer)
+    //        if (error) throw error
     //
     //    })
-    //    //done()
+    //
     //})
     //room.createPipeline(function (e, pipeline) {
     //    should(e).equal(null)

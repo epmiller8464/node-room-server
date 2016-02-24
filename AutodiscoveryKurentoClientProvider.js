@@ -23,13 +23,14 @@ var KurentoClientProvider = require('./sdk/api/KurentoClientProvider')
 
 var inherits = require('inherits')
 
-function AutodiscoveryKurentoClientProvider() {
+function AutoDiscoveryKurentoClientProvider() {
     var self = this
+    AutoDiscoveryKurentoClientProvider.super_.call(self)
 }
-AutodiscoveryKurentoClientProvider.ROOM_PIPELINE_LOAD_POINTS = 50;
-inherits(AutodiscoveryKurentoClientProvider, KurentoClientProvider)
+AutoDiscoveryKurentoClientProvider.ROOM_PIPELINE_LOAD_POINTS = 50;
+inherits(AutoDiscoveryKurentoClientProvider, KurentoClientProvider)
 
-AutodiscoveryKurentoClientProvider.prototype.getKurentoClient = function (sessionInfo) {
+AutoDiscoveryKurentoClientProvider.prototype.getKurentoClient = function (sessionInfo) {
     var self = this
 
     //kurento(kmsWsUri, function (error, kc) {
@@ -45,8 +46,8 @@ AutodiscoveryKurentoClientProvider.prototype.getKurentoClient = function (sessio
     //});
     return KurentoClient.create(Properties.of("loadPoints", ROOM_PIPELINE_LOAD_POINTS));
 }
-AutodiscoveryKurentoClientProvider.prototype.destroyWhenUnused = function () {
+AutoDiscoveryKurentoClientProvider.prototype.destroyWhenUnused = function () {
     return true;
 }
 
-module.exports = AutodiscoveryKurentoClientProvider
+module.exports = AutoDiscoveryKurentoClientProvider

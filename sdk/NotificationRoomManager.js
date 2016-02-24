@@ -3,9 +3,9 @@
  */
 var util = require('util')
 var inherits = require('inherits')
-var EventEmitter = require('Events').EventEmitter
+var EventEmitter = require('events').EventEmitter
 var NotificationRoomHandler = require('./internal/NotificationRoomHandler')
-var KurentoClientSessionInfo = require('./internal/DefaultKurentoClientSessionInfo')
+var KurentoClientSessionInfo = require('./internal/KurentoClientSessionInfo')
 var RoomManager = require('./RoomManager')
 var RoomError = require('./exception/RoomException')
 
@@ -18,7 +18,7 @@ var RoomError = require('./exception/RoomException')
  */
 function NotificationRoomManager(notificationService, kcProvider) {
     var self = this
-
+    EventEmitter.call(this)
     self.notificationRoomHandler = new NotificationRoomHandler(notificationService)
     self.internalManager = new RoomManager(self.notificationRoomHandler, kcProvider)
 

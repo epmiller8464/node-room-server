@@ -12,7 +12,7 @@
 
 var ws = require('ws')
 var RoomJsonRpcHandler = require('./RoomJsonRpcHandler')
-var AutodiscoveryKurentoClientProvider = require('./AutodiscoveryKurentoClientProvider')
+var AutodiscoveryKurentoClientProvider = require('./AutoDiscoveryKurentoClientProvider')
 var FixedOneKmsManager = require('./kms/FixedOneKmsManager')
 var JsonRpcNotificationService = require('./rpc/JsonRpcNotificationService')
 var JsonRpcUserControl = require('./rpc/JsonRpcUserControl')

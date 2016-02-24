@@ -1,7 +1,7 @@
 /**
  * Created by ghostmac on 1/12/16.
  */
-//var EventEmitter = require('Events').EventEmitter
+//var EventEmitter = require('events').EventEmitter
 var util = require('util')
 var kurento = require('kurento-client');
 var Room = require('./internal/Room')
@@ -431,7 +431,7 @@ RoomManager.prototype.isPublisherStreaming = function (participantId) {
     return p.isStreaming()
 }
 
-RoomManager.prototype.createRoom = function (kcSessionInfo) {
+RoomManager.prototype.createRoom = function (kcSessionInfo, cb) {
     var self = this
     var roomName = kcSessionInfo.getRoomName()
     var room = self.rooms[roomName]
@@ -444,16 +444,19 @@ RoomManager.prototype.createRoom = function (kcSessionInfo) {
     room = new Room(roomName, kc, self.roomHandler, self.kcProvider.destroyWhenUnused())
     self.rooms[roomName] = room
     var kcName = '[NAME NOT AVAILABLE]';
-    var serverManager = kc.getServerManager()
-    if (serverManager !== null) {
-        //kcName = kc.getServerManager(function(s){
-        // return s.getName();
-        // })
-        kcName = kc.getServerManager().getName();
-
-    }
-    console.log("No room %s exists yet. Created one using KurentoClient %s .", roomName, kcName);
-    return room
+    //var sm = kc.getServerManager().then().getName()
+   //xs kcName = sm.getName()
+    console.log(util.inspect(kc.getServerManager()))
+    //kc.getServerManager(function (manager) {
+    //
+    //    if (manager !== null) {
+    //        kcName = manager.getName();
+    //    }
+    //
+    //    console.log("No room %s exists yet. Created one using KurentoClient %s .", roomName, kcName);
+    //
+    //    //return cb(room)
+    //})
 }
 /**
  *

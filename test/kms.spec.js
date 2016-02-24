@@ -17,32 +17,40 @@ var dockerKmsWsUri = util.format('ws://%s:%s/kurento', dockerKmsHostIp, dockerKm
 describe('KMS', function () {
     it('Create New KmsManager', function (done) {
         console.log(dockerKmsWsUri)
-
-        var kc = kurento.KurentoClient(dockerKmsWsUri)
-
-        var t = kc.beginTransaction()
-        t.commit()
-        console.log(util.inspect(t))
-        t = kc.endTransaction()
-        console.log(util.inspect(kc))
-        var numKmss = 5
-        var kmsWsUri = dockerKmsWsUri
-        //var kmsManager = new FixedOneKmsManager(kmsWsUri, numKmss, function () {
-        //    //console.log(kmsManager)
-        //    while (kmsManager.kmss.first()) {
-        //        var kms = kmsManager.kmss.shift()
-        //        kms.should.be.not.equal(undefined)
-        //        var sessionId = kms.getKurentoClient().sessionId
-        //        sessionId.should.not.equal(null)
-        //        sessionId.should.not.equal(undefined)
-        //        sessionId.should.not.equal('')
-        //        console.log(sessionId)
-        //
-        //    }
-        //
-        //
-        //    done()
+        var kms = new FixedOneKmsManager()//dockerKmsWsUri, kurentoClient)
+        kms.addKms(new Kms(null, dockerKmsWsUri))
+        kms.getKurentoClient();
+        //kurento(dockerKmsWsUri, function (error, kurentoClient) {
+        //    //kms
         //})
-        done()
+        //var kc = kurento.KurentoClient(dockerKmsWsUri)
+
+        //var t = kc.beginTransaction()
+        //t.commit()
+        //console.log(util.inspect(t))
+        //t = kc.endTransaction()
+        //console.log(util.inspect(kc))
+        var numKmss = 1
+        var kmsWsUri = dockerKmsWsUri
+        var kmsManager = new FixedOneKmsManager(kmsWsUri, numKmss, function (e, kmsMgr) {
+            console.log(util.inspect(kmsManager))
+            //console.log(kmsManager)
+            //while (kmsManager.kmss.first()) {
+            for (var key in kmsManager.kmss) {
+
+                var kms = kmsManager.kmss[key]
+                kms.should.be.not.equal(undefined)
+                var sessionId = kms.getKurentoClient().sessionId
+                sessionId.should.not.equal(null)
+                sessionId.should.not.equal(undefined)
+                sessionId.should.not.equal('')
+                console.log(sessionId)
+
+            }
+
+
+            done()
+        })
+        //done()
     });
 });

@@ -14,7 +14,7 @@
 //
 var util = require('util')
 var inherits = require('inherits')
-var DefaultKurentoClientSessionInfo = require('../sdk/internal/DefaultKurentoClientSessionInfo')
+var DefaultKurentoClientSessionInfo = require('../sdk/internal/KurentoClientSessionInfo')
 var KurentoClientProvider = require('../sdk/api/KurentoClientProvider')
 var FIFO = require('fifo')
 
@@ -37,8 +37,9 @@ KmsLoad.prototype.compareTo = function (kmsLoad) {
 }
 
 function KmsManager() {
+    KmsManager.super_.call(this)
     var self = this
-    self.kmss = {}
+    self.kmss = new FIFO()
     self.usageIterator = null
 
 }
@@ -50,26 +51,26 @@ KmsManager.prototype.getKurentoClient = function (sessionInfo) {
     //var msg = util.format('Unknow session type.'
     console.log('get kurento client %s', sessionInfo)
 
-    var kc = self.getKms(sessionInfo)
-    return kc.getKurentoClient()
+    var kms = self.getKms(sessionInfo)
+    var kc = kms.getKurentoClient()
+
+    return kc
 }
 
 KmsManager.prototype.getKms = function (sessionInfo) {
     var self = this
-    //if (self.kmss && self.kmss.length > 0) {
-    return self.kmss[sessionInfo]
-    //if (self.kmss) {
-    //    return self.kmss[sessionInfo]
-    //return self.kmss.shift()
-    //} else
-    //    return null
+    var kms = self.kmss.shift()
+    self.addKms(kms)
+    return kms
 
 }
 
 KmsManager.prototype.addKms = function (kms) {
     var self = this
-    var sessionId = kms.getKurentoClient().sessionId
-    return self.kmss[sessionId] = kms
+    //var sessionId = kms.getKurentoClient().sessionId
+    //self.kmss[sessionId] = kms
+    return self.kmss.push(kms)
+    //return kms
 }
 KmsManager.prototype.getLessLoadedKms = function () {
     throw new Error('Not implemented exception')

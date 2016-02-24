@@ -18,12 +18,15 @@ var inherits = require('inherits');
 var kurento = require('kurento-client');
 var should = require('should');
 var assert = require('assert');
-var KCSessionInfo = require('./sdk/internal/DefaultKurentoClientSessionInfo')
+var KCSessionInfo = require('./sdk/internal/KurentoClientSessionInfo')
 var Room = require('./sdk/internal/Room')
 var RoomManager = require('./sdk/RoomManager')
 var JsonRpcNotificationService = require('./rpc/JsonRpcNotificationService')
 var NotificationRoomHandler = require('./sdk/internal/NotificationRoomHandler')
+var NotificationRoomManager = require('./sdk/NotificationRoomManager')
 var UserParticipant = require('./sdk/api/poco/UserParticipant')
+var FixedOneKmsManager = require('./kms/FixedOneKmsManager')
+var Kms = require('./kms/Kms')
 var uuid = require('node-uuid')
 var c = require('chance')()
 
@@ -38,10 +41,10 @@ function MyEmitter() {
 inherits(MyEmitter, EventEmitter);
 
 const myEmitter = new MyEmitter();
-myEmitter.on('event', function(evt) {
-    logger.log('an event occurred!',evt.object);
+myEmitter.on('event', function (evt) {
+    logger.log('an event occurred!', evt.object);
 });
-myEmitter.emit('event',{object:'test'});
+myEmitter.emit('event', {object: 'test'});
 
 function go() {
     var stream = ''
@@ -61,36 +64,44 @@ function go() {
     var user = new UserParticipant(pid, username, false)
     //logger.log(util.inspect(user))
     kurento(dockerKmsWsUri, function (error, kurentoClient) {
-        //assert(!error, 'Some dumb error create kurentoClient')
-        var room = new Room(roomName, kurentoClient, roomHandler, false)
-        //console.log(util.inspect(room))
-        room.join(pid, user.getUserName(), true, function (e, publisher) {
-            //room.join(pid, user.getUserName(), true, (e, publisher) => {
-            //should(e).equal(null)
-            //logger.log(e, newUser)
-            publisher.createPublishingEndpoint(function (error, result) {
-
-                logger.log(error, result)
-                if (error) {
-                }
-                result.processOffer(stream, function (error, answer) {
-
-                    logger.log(error, answer)
-                    if (error) throw error
-
-                })
-
-            })
-            //done()
-        })
-        //room.createPipeline(function (e, pipeline) {
-        //    should(e).equal(null)
-        //    console.log(e, pipeline)
-        //    done()
+        logger.log(util.inspect(kurentoClient.getServerManager().getName()))
+        //function () {
+        //
         //})
+        var kms = new FixedOneKmsManager()//dockerKmsWsUri, kurentoClient)
+        kms.addKms(new Kms(kurentoClient, dockerKmsWsUri))
+
+        //var room = new Room(roomName, kurentoClient, roomHandler, false)
+        var rmMgr = new NotificationRoomManager(userNotifyService, kms)
+        var room = rmMgr.createRoom(new KCSessionInfo(pid, 'test'))
+        logger.log(util.inspect(room))
     })
+    //console.log(util.inspect(room))
+    //room.join(pid, user.getUserName(), true, function (e, publisher) {
+    //    //room.join(pid, user.getUserName(), true, (e, publisher) => {
+    //    //should(e).equal(null)
+    //    //logger.log(e, newUser)
+    //    publisher.createPublishingEndpoint(function (error, result) {
+    //
+    //        logger.log(error, result)
+    //        if (error) {
+    //        }
+    //        result.processOffer(stream, function (error, answer) {
+    //
+    //            logger.log(error, answer)
+    //            if (error) throw error
+    //
+    //        })
+    //
+    //    })
+    //    //done()
+    //})
+    //room.createPipeline(function (e, pipeline) {
+    //    should(e).equal(null)
+    //    console.log(e, pipeline)
+    //    done()
+    //})
+    //})
 }
 
 go()
-
-var t = ''

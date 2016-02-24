@@ -1,0 +1,24 @@
+{
+  "name": "node-room-server",
+  "description": "",
+  "main": "index.html",
+  "moduleType": [
+    "globals"
+  ],
+  "license": "LGPL",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "adapter.js": "*",
+    "bootstrap": "*",
+    "ekko-lightbox": "*",
+    "demo-console": "master",
+    "kurento-utils": "master"
+  }
+}

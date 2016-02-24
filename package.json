@@ -26,6 +26,7 @@
     "supertest": "^1.1.0"
   },
   "scripts": {
-    "sdk-test": "tape ./sdk/test/*.tape.js"
+    "sdk-test": "tape ./sdk/test/*.tape.js",
+    "postinstall": "cd static && bower install"
   }
 }

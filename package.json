@@ -4,17 +4,20 @@
   "private": true,
   "dependencies": {
     "async": "^1.5.1",
+    "body-parser": "^1.15.0",
     "checktype": "0.0.7",
     "debug": "^2.2.0",
     "error-tojson": "0.0.1",
     "es6-promise": "^3.0.2",
     "express": "^4.13.3",
     "fifo": "^2.3.0",
+    "graceful-fs": "^4.1.3",
     "inherits": "^2.0.1",
     "kurento-client": "~6.2.0",
     "minimist": "^1.2.0",
     "morgan": "^1.6.1",
     "node-uuid": "^1.4.7",
+    "path": "^0.12.7",
     "util": "^0.10.3",
     "ws": "~1.0.1"
   },
@@ -23,7 +26,16 @@
     "chance": "^0.8.0",
     "mocha": "^2.3.4",
     "should": "^8.1.1",
-    "supertest": "^1.1.0"
+    "supertest": "^1.1.0",
+    "chromedriver": "^2.16.0",
+    "grunt": "^0.4.5",
+    "grunt-cli": ">=0.1.9",
+    "grunt-eslint": "^17.2.0",
+    "grunt-githooks": "^0.3.1",
+    "selenium-webdriver": "^2.48.2",
+    "tape": "^4.0.0",
+    "travis-multirunner": "^3.0.0",
+    "webrtc-adapter-test": ">0.2.0"
   },
   "scripts": {
     "sdk-test": "tape ./sdk/test/*.tape.js",

@@ -145,19 +145,6 @@ var WebRtcTestClient = (function () {
     }
   };
 
-  //WebRtcTestClient.prototype.onOfferPresenter = ;
-
-  //WebRtcTestClient.prototype.onOfferViewer = function (error, offerSdp) {
-  //  var self = this;
-  //  if (error) return onError(error);
-  //
-  //  var message = {
-  //    id: 'viewer',
-  //    sdpOffer: offerSdp
-  //  };
-  //  self.sendMessage(message);
-  //};
-
   WebRtcTestClient.prototype.onIceCandidate = function (candidate) {
     var self = this;
     //self.webRtcPeer.addIceCandidate(parsedMessage.candidate)
@@ -170,19 +157,6 @@ var WebRtcTestClient = (function () {
       }
       self.sendMessage(message);
   };
-  //
-  //WebRtcTestClient.prototype.onIceCandidate = function (candidate) {
-  //  var self = this;
-  //  WebRtcTestClient.console.log('Local candidate' + JSON.stringify(candidate));
-  //
-  //  var message = {
-  //    id : 'onIceCandidate',
-  //    candidate : candidate
-  //  }
-  //  WebRtcTestClient.sendMessage(message);
-  //}
-
-  //WebRtcTestClient.prototype.stop = ;
 
   WebRtcTestClient.prototype.dispose = function () {
     var self = this;
@@ -195,7 +169,6 @@ var WebRtcTestClient = (function () {
     }
     hideSpinner(self.video);
   };
-
 
   WebRtcTestClient.prototype.sendMessage = function (message) {
     var self = this;

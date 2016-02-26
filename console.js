@@ -54,6 +54,7 @@ function go() {
         stream = data.toString()
         logger.log(stream);
     })
+    //pussy
     //let f = (x) => {
     //    return x * 2
     //}

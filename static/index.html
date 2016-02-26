@@ -12,23 +12,19 @@
     <link rel="stylesheet" href="bower_components/demo-console/index.css">
     <link rel="stylesheet" href="bower_components/ekko-lightbox/dist/ekko-lightbox.min.css">
     <link rel="stylesheet" href="css/kurento.css">
-
-    <script src="bower_components/adapter.js/adapter.js"></script>
+    <script src="bower_components/adapter.js"></script>
     <script src="bower_components/jquery/dist/jquery.min.js"></script>
     <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="bower_components/demo-console/index.js"></script>
     <script src="bower_components/ekko-lightbox/dist/ekko-lightbox.min.js"></script>
-
     <script src="bower_components/kurento-utils/js/kurento-utils.js"></script>
-    <script src="js/WebRtcTestClient.js"></script>
-
-
+    <script src="js/RoomClientWrapper.js"></script>
     <title>Kurento Tutorial 3: Video Call 1 to N with WebRTC</title>
 </head>
 <body>
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-3" data-webrtc-client="1">
+        <div class="col-md-3" data-webrtc-presenterId="1">
             <div class="row">
                 <div class="videoSmall pull-left">
                     <video id="video_1" autoplay width="240px" height="180px" poster="img/webrtc.png"></video>
@@ -36,143 +32,84 @@
                 <div class="col-md-4 pull-right">
                     <a id="call_1" href="#" class="btn btn-success">
                         <span class="glyphicon glyphicon-play"></span> Presenter</a>
-                    <a id="viewer_1" href="#" class="btn btn-primary">
+                    <a id="addViewer" href="#" class="btn btn-primary">
                         <span class="glyphicon glyphicon-user"></span> Viewer</a>
                     <a id="terminate_1" href="#" class="btn btn-danger">
                         <span class="glyphicon glyphicon-stop"></span> Stop</a>
                 </div>
             </div>
-
             <div class="row">
                 <div id="console_1" class="console democonsole">
                     <ul id="console_list_1"></ul>
                 </div>
             </div>
         </div>
-        <div class="col-md-3" data-webrtc-client="2">
-            <div class="row">
-                <div class="videoSmall pull-left">
-                    <video id="video_2" autoplay width="240px" height="180px" poster="img/webrtc.png"></video>
-                </div>
-                <div class="col-md-4 pull-right">
-                    <a id="call_2" href="#" class="btn btn-success">
-                        <span class="glyphicon glyphicon-play"></span> Presenter</a>
-                    <a id="viewer_2" href="#" class="btn btn-primary">
-                        <span class="glyphicon glyphicon-user"></span> Viewer</a>
-                    <a id="terminate_2" href="#" class="btn btn-danger">
-                        <span class="glyphicon glyphicon-stop"></span> Stop</a>
-                </div>
-            </div>
-
-            <div class="row">
-                <div id="console_2" class="console democonsole">
-                    <ul id="console_list_2"></ul>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3" data-webrtc-client="3">
-            <div class="row">
-                <div class="videoSmall pull-left">
-                    <video id="video_3" autoplay width="240px" height="180px" poster="img/webrtc.png"></video>
-                </div>
-                <div class="col-md-4 pull-right">
-                    <a id="call_3" href="#" class="btn btn-success">
-                        <span class="glyphicon glyphicon-play"></span> Presenter</a>
-                    <a id="viewer_3" href="#" class="btn btn-primary">
-                        <span class="glyphicon glyphicon-user"></span> Viewer</a>
-                    <a id="terminate_3" href="#" class="btn btn-danger">
-                        <span class="glyphicon glyphicon-stop"></span> Stop</a>
-                </div>
-            </div>
-
-            <div class="row">
-                <div id="console_3" class="console democonsole">
-                    <ul id="console_list_3"></ul>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3" data-webrtc-client="4">
-            <div class="row">
-                <div class="videoSmall pull-left">
-                    <video id="video_4" autoplay width="240px" height="180px" poster="img/webrtc.png"></video>
-                </div>
-                <div class="col-md-4 pull-right">
-                    <a id="call_4" href="#" class="btn btn-success">
-                        <span class="glyphicon glyphicon-play"></span> Presenter</a>
-                    <a id="viewer_4" href="#" class="btn btn-primary">
-                        <span class="glyphicon glyphicon-user"></span> Viewer</a>
-                    <a id="terminate_4" href="#" class="btn btn-danger">
-                        <span class="glyphicon glyphicon-stop"></span> Stop</a>
-                </div>
-            </div>
-
-            <div class="row">
-                <div id="console_4" class="console democonsole">
-                    <ul id="console_list_4"></ul>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3" data-webrtc-client="5">
-            <div class="row">
-                <div class="videoSmall pull-left">
-                    <video id="video_5" autoplay width="240px" height="180px" poster="img/webrtc.png"></video>
-                </div>
-                <div class="col-md-4 pull-right">
-                    <a id="call_5" href="#" class="btn btn-success">
-                        <span class="glyphicon glyphicon-play"></span> Presenter</a>
-                    <a id="viewer_5" href="#" class="btn btn-primary">
-                        <span class="glyphicon glyphicon-user"></span> Viewer</a>
-                    <a id="terminate_5" href="#" class="btn btn-danger">
-                        <span class="glyphicon glyphicon-stop"></span> Stop</a>
-                </div>
-            </div>
-
-            <div class="row">
-                <div id="console_5" class="console democonsole">
-                    <ul id="console_list_5"></ul>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3" data-webrtc-client="6">
-            <div class="row">
-                <div class="videoSmall pull-left">
-                    <video id="video_6" autoplay width="240px" height="180px" poster="img/webrtc.png"></video>
-                </div>
-                <div class="col-md-4 pull-right">
-                    <a id="call_6" href="#" class="btn btn-success">
-                        <span class="glyphicon glyphicon-play"></span> Presenter</a>
-                    <a id="viewer_6" href="#" class="btn btn-primary">
-                        <span class="glyphicon glyphicon-user"></span> Viewer</a>
-                    <a id="terminate_6" href="#" class="btn btn-danger">
-                        <span class="glyphicon glyphicon-stop"></span> Stop</a>
-                </div>
-            </div>
-
-            <div class="row">
-                <div id="console_6" class="console democonsole">
-                    <ul id="console_list_6"></ul>
-                </div>
-            </div>
-        </div>
+    </div>
+    <div id="viewers" class="row">
     </div>
 </div>
 
 <script>
+    var x = 2
+    var viewerControl = function (id) {
+        return '<div class="col-md-3" data-webrtc-viewerId="' + id + '">' +
+                '<div class="row">' +
+                '<div class="videoSmall pull-left">' +
+                '<video id="video_1" autoplay width="240px" height="180px" poster="img/webrtc.png"></video>' +
+                '</div>' +
+                '<div class="col-md-4 pull-right">' +
+                '<a id="call_' + id + '" href="#" class="btn btn-success">' +
+                '<span class="glyphicon glyphicon-play"></span> Presenter</a>' +
+                '<a id="viewer_' + id + '" href="#" class="btn btn-primary">' +
+                '<span class="glyphicon glyphicon-user"></span> Viewer</a>' +
+                '<a id="terminate_' + id + '" href="#" class="btn btn-danger">' +
+                '<span class="glyphicon glyphicon-stop"></span> Stop</a>' +
+                '</div>' +
+                '</div>' +
+                '<div class="row" style="margin-bottom: 10px;">' +
+                '<div id="console_' + id + '" class="console democonsole">' +
+                '<ul id="console_list_' + id + '"></ul>' +
+                '</div>' +
+                '</div>' +
+                '</div>'
 
-
+    }
+    var index = 0
     $(document).ready(function () {
+        addNewViewer(index++)
 
-        var items = $('div[data-webrtc-client]');
-        var arr = new Array(items);
-
-        for(var i = 0; i < items.length;i++){
-            var clientId = $(items[i]).attr('data-webrtc-client');
-            console.log(clientId);
-            var client = new WebRtcTestClient();
-            client.init({id: clientId});
-        }
+//        var items = $('div[data-webrtc-client]');
+//        var arr = new Array(items);
+//
+//        var container = $('.row').last()
+//        for (var i = 1; i <= 10; i++) {
+//            var clientId = i + 1//$(items[i]).attr('data-webrtc-client');
+//            console.log(clientId);
+//            var client = new WebRtcTestClient();
+//            client.init({id: clientId});
+//            var div = viewerControl(i)
+//            container.append(div)
+//            addNewViewer(i + 1)
+//            index = i
+//        }
 
     });
+
+
+    $('#addViewer').click(function () {
+        addNewViewer(index)
+    })
+    function addNewViewer(_id) {
+        var container = $('#viewers')
+        var clientId = _id + 1//$(items[i]).attr('data-webrtc-client');
+        console.log(clientId);
+        var client = new WebRtcTestClient();
+        client.init({id: clientId});
+        var div = viewerControl(_id)
+        container.append(div)
+        index++
+    }
+
 </script>
 </body>
 </html>

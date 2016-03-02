@@ -46,12 +46,10 @@ RoomManager.prototype.joinRoom = function (userName,
     room.join(pid, userName, webParticipant, function (error, participant) {
 
         if (error) {
-
             console.log(util.format('%s is trying to join room %s but an error occurred: %s.', userName, roomName, error))
         }
         if (participant) {
             console.log(util.format('%s joined room %s.', userName, roomName))
-
         }
         //cb(error, participant)
     })

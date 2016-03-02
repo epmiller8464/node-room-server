@@ -11,9 +11,9 @@ var NotificationRoomManager = require('../sdk/NotificationRoomManager')
  * Parses and delegates JSON-RPC messages server-side
  * @constructor
  */
-function JsonRpcUserControl() {
+function JsonRpcUserControl(roomManager) {
     var self = this
-    self.roomManager = new Notifi
+    self.roomManager = roomManager
     self.log = null
 }
 

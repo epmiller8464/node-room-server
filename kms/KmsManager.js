@@ -46,15 +46,15 @@ function KmsManager() {
 
 inherits(KmsManager, KurentoClientProvider)
 
-KmsManager.prototype.getKurentoClient = function (sessionInfo) {
+KmsManager.prototype.getKurentoClient = function (sessionInfo,callback) {
     var self = this
     //var msg = util.format('Unknow session type.'
     console.log('get kurento client %s', sessionInfo)
 
     var kms = self.getKms(sessionInfo)
-    var kc = kms.getKurentoClient()
-
-    return kc
+    //var kc = kms.getKurentoClient()
+    return  kms.getKurentoClient()
+    //return kc
 }
 
 KmsManager.prototype.getKms = function (sessionInfo) {

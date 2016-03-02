@@ -12,16 +12,98 @@
     <link rel="stylesheet" href="bower_components/demo-console/index.css">
     <link rel="stylesheet" href="bower_components/ekko-lightbox/dist/ekko-lightbox.min.css">
     <link rel="stylesheet" href="css/kurento.css">
-    <script src="bower_components/adapter.js"></script>
+    <script src="bower_components/adapter.js/adapter.js"></script>
     <script src="bower_components/jquery/dist/jquery.min.js"></script>
     <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="bower_components/demo-console/index.js"></script>
     <script src="bower_components/ekko-lightbox/dist/ekko-lightbox.min.js"></script>
     <script src="bower_components/kurento-utils/js/kurento-utils.js"></script>
-    <script src="js/RoomClientWrapper.js"></script>
+    <script src="bower_components/kurento-utils/js/kurento-utils.js"></script>
+    <script src="bower_components/kurento-jsonrpc/js/kurento-jsonrpc.js"></script>
+    <script src="./js/EventEmitter.js"></script>
+    <script src="./js/KurentoRoom.js"></script>
     <title>Kurento Tutorial 3: Video Call 1 to N with WebRTC</title>
 </head>
 <body>
 <p>test</p>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3" data-webrtc-presenterId="1">
+            <div class="row">
+                <!--<div class="videoSmall pull-left">-->
+                <!--<video id="video_1" autoplay width="240px" height="180px" poster="img/webrtc.png"></video>-->
+                <!--</div>-->
+                <div class="col-md-4 pull-right">
+                    <a id="joinRoom" href="#" class="btn btn-success">
+                        joinRoom
+                    </a>
+                    <a id="participantJoined" href="#" class="btn btn-primary">
+                        participantJoined
+                    </a>
+                    <a id="publishVideo" href="#" class="btn btn-primary">
+                        publishVideo
+                    </a>
+                    <a id="participantPublished" href="#" class="btn btn-danger">
+                        participantPublished
+                    </a>
+                    <a id="unpublishVideo" href="#" class="btn btn-danger">
+                        unpublishVideo
+                    </a>
+                    <a id="participantUnpublished" href="#" class="btn btn-danger">
+                        participantUnpublished
+                    </a>
+                    <a id="receiveVideoFrom" href="#" class="btn btn-danger">
+                        participantUnpublished
+                    </a>
+                    <a id="onIceCandidate" href="#" class="btn btn-danger">
+                        onIceCandidate
+                    </a>
+                    <a id="iceCandidate" href="#" class="btn btn-danger">
+                        iceCandidate
+                    </a>
+                    <a id="leaveRoom" href="#" class="btn btn-danger">
+                        leaveRoom
+                    </a>
+                    <a id="participantLeft" href="#" class="btn btn-danger">
+                        participantLeft
+                    </a>
+                    <a id="sendMessage" href="#" class="btn btn-danger">
+                        sendMessage
+                    </a>
+                    <a id="mediaError" href="#" class="btn btn-danger">
+                        mediaError
+                    </a>
+                    <a id="customRequest" href="#" class="btn btn-danger">
+                        customRequest
+                    </a>
+
+                </div>
+            </div>
+            <div class="row">
+                <div id="console_1" class="console democonsole">
+                    <ul id="console_list_1"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="viewers" class="row">
+    </div>
+</div>
+<script>
+    var room, roomName = 'testRoom', userName = 'testUser', kurento = undefined;
+    var roomOptions = {room: roomName, user: userName}
+    $(document).ready(function () {
+        KurentoRoom('ws://' + location.host + '/r', function (error, _kurento) {
+            kurento = _kurento
+            room = kurento.Room(roomOptions)
+        })
+    })
+    $('#joinRoom').click(function () {
+        room.connect()
+    })
+
+</script>
+
 </body>
 </html>

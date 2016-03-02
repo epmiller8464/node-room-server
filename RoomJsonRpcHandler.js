@@ -23,7 +23,7 @@ function RoomJsonRpcHandler(userControl, notificationService) {
 
 inherits(RoomJsonRpcHandler, JsonRpcHandler)
 
-RoomJsonRpcHandler.HANDLER_THREAD_NAME = 'handler'
+//RoomJsonRpcHandler.HANDLER_THREAD_NAME = 'handler'
 /**
  * Accepts client requests and process them through the pipline via
  * @param transaction
@@ -43,8 +43,7 @@ RoomJsonRpcHandler.prototype.handleRequest = function (transaction, request) {
     self.notificationService.addTransaction(transaction, request);
     var participantRequest = new ParticipantRequest(sessionId, request.getId());
     //transaction.startAsync();
-
-    switch (request.getMethod()) {
+    switch (request.method) {
         case ProtocolElements.JOINROOM_METHOD:
             self.userControl.joinRoom(transaction, request, participantRequest);
             break;

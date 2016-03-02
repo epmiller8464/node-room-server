@@ -11,73 +11,55 @@
 //@SpringBootApplication
 
 var ws = require('ws')
+var inherits = require('inherits')
+var EventEmitter = require('events').EventEmitter
+var kurento = require('kurento-client');
 var RoomJsonRpcHandler = require('./RoomJsonRpcHandler')
 var AutodiscoveryKurentoClientProvider = require('./AutoDiscoveryKurentoClientProvider')
 var FixedOneKmsManager = require('./kms/FixedOneKmsManager')
+var Kms = require('./kms/Kms')
 var JsonRpcNotificationService = require('./rpc/JsonRpcNotificationService')
 var JsonRpcUserControl = require('./rpc/JsonRpcUserControl')
 var NotificationRoomManager = require('./sdk/NotificationRoomManager')
-var hostAddress = 'wss://roomAddress:roomPort/room'
-var KMSS_URIS_PROPERTY = 'kms.uris';
-var KMSS_URIS_DEFAULT = '[ \'ws://localhost:8888/kurento\' ]';
-function KurentoRoomServerApp() {
+//var hostAddress = 'ws://roomAddress:roomPort/room'
+//var KMSS_URIS_PROPERTY = 'kms.uris';
+//var KMSS_URIS_DEFAULT = '[ \'ws://localhost:8888/kurento\' ]';
 
+function KurentoRoomServerApp(opts, callback) {
+    //EventEmitter.call(this)
     var self = this
-//	private static JsonRpcNotificationService userNotificationService = new JsonRpcNotificationService();
-    self.userNotificationService = new JsonRpcNotificationService()
-    self.log = null
-}
+    this.kmsManager = null
+    this.notificationService = null// = new JsonRpcNotificationService()
+    this.roomManager = null
+    this.roomHandler = null
+    this.userControl = null
+    this.log = null
+    this.options = opts || {}
+    this.kmsWsUri = opts.kmsWsUri
+    this.kmsClientCount = 1
 
-KurentoRoomServerApp.kmsManager = function () {
-    var self = this
-    var kmsUris = []//getPropertyJson(KMSS_URIS_PROPERTY, KMSS_URIS_DEFAULT, JsonArray.class);
-    var kmsWsUris = []// JsonUtils.toStringList(kmsUris);
-
-    if (!kmsWsUris.length) {
-        throw new Error(KMSS_URIS_PROPERTY + ' should contain at least one kms url');
+    function getKurentoClient(callback) {
+        kurento(self.kmsWsUri, callback)
     }
 
-    var firstKmsWsUri = kmsWsUris[0]
-    if (firstKmsWsUri === 'autodiscovery') {
-        console.log('Using autodiscovery rules to locate KMS on every pipeline');
-        return new AutodiscoveryKurentoClientProvider();
+    function bootServer(callback) {
 
-    } else {
+        self.kmsManager = new FixedOneKmsManager();
+        self.notificationService = new JsonRpcNotificationService()
+        self.roomManager = new NotificationRoomManager(self.notificationService, self.kmsManager);
+        self.userControl = new JsonRpcUserControl(self.roomManager);
+        self.roomHandler = new RoomJsonRpcHandler(self.userControl, self.notificationService);
 
-        console.log('Configuring Kurento Room Server to use first of the following kmss: ' + kmsWsUris);
-        return new FixedOneKmsManager(firstKmsWsUri);
+        getKurentoClient(function (error, kurentoClient) {
+            self.kmsManager.addKms(new Kms(kurentoClient, self.kmsWsUri))
+
+            callback(self)
+        })
+
     }
-}
 
-KurentoRoomServerApp.notificationService = function () {
-    var self = this
-    return self.userNotificationService
+    bootServer(callback)
 }
-KurentoRoomServerApp.roomManager = function () {
-    var self = this
-    return new NotificationRoomManager(self.userNotificationService, self.kmsManager());
-}
-KurentoRoomServerApp.userControl = function () {
-    return new JsonRpcUserControl();
-}
+//inherits(KurentoRoomServerApp, EventEmitter)
 
-KurentoRoomServerApp.registerJsonRpcHandlers = function () {
-    //RoomJsonRpcHandler
-}
-KurentoRoomServerApp.roomHandler = function () {
-    var self = this
-    return new RoomJsonRpcHandler();
-}
-//
-KurentoRoomServerApp.registerJsonRpcHandlers = function (registry) {
-    var self = this
-    registry.addHandler(self.roomHandler(), '/room');
-}
-//	public static void main(String[] args) throws Exception {
-//		start(args);
-//	}
-//
-// 	public static ConfigurableApplicationContext start(String[] args) {
-//		return SpringApplication.run(KurentoRoomServerApp.class, args);
-//	}
-//}
+module.exports = KurentoRoomServerApp

@@ -77,6 +77,8 @@
     var index = 0
     $(document).ready(function () {
         addNewViewer(index++)
+//        var ws = new WebSocket('ws://192.168.0.6:8282/r');
+        var ws = new WebSocket('ws://' + location.host + '/r');
 
 //        var items = $('div[data-webrtc-client]');
 //        var arr = new Array(items);
@@ -100,13 +102,18 @@
         addNewViewer(index)
     })
     function addNewViewer(_id) {
+//        var ws = new WebSocket('ws://' + location.host);?
+        var ws = new WebSocket('ws://' + location.host + '/r');
+
+//        var ws = new WebSocket('ws://192.168.0.6:8282/r');
         var container = $('#viewers')
         var clientId = _id + 1//$(items[i]).attr('data-webrtc-client');
         console.log(clientId);
-        var client = new WebRtcTestClient();
-        client.init({id: clientId});
-        var div = viewerControl(_id)
-        container.append(div)
+//        var client = new WebRtcTestClient();
+//        client.init({id: clientId});
+//        var div = viewerControl(_id)
+//        container.append(div)
+
         index++
     }
 

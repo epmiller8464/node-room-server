@@ -1,6 +1,7 @@
 var inherits = require('inherits')
 var ParticipantSession = require('./ParticipantSession')
 var UserNotificationService = require('../sdk/api/UserNotificationService')
+var SessionWrapper = require('./SessionWrapper')
 
 function JsonRpcNotificationService() {
     //private static ConcurrentMap<var , var > sessions = new ConcurrentHashMap<var , var >();
@@ -13,12 +14,11 @@ inherits(JsonRpcNotificationService, UserNotificationService)
 
 JsonRpcNotificationService.prototype.addTransaction = function (t, request) {
     var self = this
-
     var sessionId = t.getSession().getSessionId();
     var sw = self.sessions[sessionId];
-    if (sw === null) {
-        //sw = new (t.getSession())
-        var oldSw = self.sessions.putIfAbsent(sessionId, sw);
+    if (!sw) {
+        sw = new SessionWrapper(t.getSession());
+        var oldSw = self.sessions[sessionId] = sw;
         if (oldSw !== null) {
             console.log('Concurrent initialization of session wrapper #%s', sessionId);
             sw = oldSw;
@@ -31,7 +31,7 @@ JsonRpcNotificationService.prototype.getSession = function (sessionId) {
     var self = this
 
     var sw = self.sessions[sessionId];
-    if (sw == null)
+    if (sw === null)
         return null;
     return sw.getSession();
 }
@@ -94,7 +94,7 @@ JsonRpcNotificationService.prototype.sendErrorResponse = function (participantRe
 JsonRpcNotificationService.prototype.sendNotification = function (participantId, method, params) {
     var self = this
 
-    var sw = self.sessions.get(participantId);
+    var sw = self.sessions[participantId];
     if (sw === null || sw.getSession() === null) {
         console.log('No session found for id %s, unable to send notification %s: %s', participantId, method, params);
         return;
@@ -132,7 +132,7 @@ JsonRpcNotificationService.prototype.closeSession = function (participantRequest
     } catch (e) {
         console.log('Error closing session for req %s', participantRequest, e);
     }
-    self.sessions.remove(sessionId);
+    delete self.sessions[sessionId];
 }
 
 module.exports = JsonRpcNotificationService

@@ -1,9 +1,9 @@
 // Room --------------------------------
 
-function jq( myid ) {
- 
-    return "#" + myid.replace( /(@|:|\.|\[|\]|,)/g, "\\$1" );
- 
+function jq(myid) {
+
+    return "#" + myid.replace(/(@|:|\.|\[|\]|,)/g, "\\$1");
+
 }
 
 function Room(kurento, options) {
@@ -57,7 +57,7 @@ function Room(kurento, options) {
                 for (var i = 0; i < length; i++) {
 
                     var participant = new Participant(kurento, false, that,
-                            exParticipants[i]);
+                        exParticipants[i]);
 
                     participants[participant.getID()] = participant;
 
@@ -88,16 +88,16 @@ function Room(kurento, options) {
 
         var pid = participant.getID();
         if (!(pid in participants)) {
-        	console.info("Publisher not found in participants list by its id", pid);
+            console.info("Publisher not found in participants list by its id", pid);
         } else {
-        	console.log("Publisher found in participants list by its id", pid);
+            console.log("Publisher found in participants list by its id", pid);
         }
         //replacing old participant (this one has streams)
         participants[pid] = participant;
-        
+
         ee.emitEvent('participant-published', [{
-                participant: participant
-            }]);
+            participant: participant
+        }]);
 
         var streams = participant.getStreams();
         for (var key in streams) {
@@ -111,24 +111,24 @@ function Room(kurento, options) {
                 }]);
             }
         }
-    } 
-    
+    }
+
     this.onParticipantJoined = function (msg) {
         var participant = new Participant(kurento, false, that, msg);
         var pid = participant.getID();
         if (!(pid in participants)) {
-        	console.log("New participant to participants list with id", pid);
-        	participants[pid] = participant;
+            console.log("New participant to participants list with id", pid);
+            participants[pid] = participant;
         } else {
-        	//use existing so that we don't lose streams info
-        	console.info("Participant already exists in participants list with " +
-        			"the same id, old:", participants[pid], ", joined now:", participant);
-        	participant = participants[pid];
+            //use existing so that we don't lose streams info
+            console.info("Participant already exists in participants list with " +
+                "the same id, old:", participants[pid], ", joined now:", participant);
+            participant = participants[pid];
         }
 
         ee.emitEvent('participant-joined', [{
-                participant: participant
-            }]);
+            participant: participant
+        }]);
     }
 
     this.onParticipantLeft = function (msg) {
@@ -139,30 +139,30 @@ function Room(kurento, options) {
             delete participants[msg.name];
 
             ee.emitEvent('participant-left', [{
-                    participant: participant
-                }]);
+                participant: participant
+            }]);
 
             var streams = participant.getStreams();
             for (var key in streams) {
                 ee.emitEvent('stream-removed', [{
-                        stream: streams[key]
-                    }]);
+                    stream: streams[key]
+                }]);
             }
 
             participant.dispose();
         } else {
             console.warn("Participant " + msg.name
-                            + " unknown. Participants: "
-                            + JSON.stringify(participants));
+                + " unknown. Participants: "
+                + JSON.stringify(participants));
         }
     };
 
     this.onParticipantEvicted = function (msg) {
-    	ee.emitEvent('participant-evicted', [{
-    		localParticipant: localParticipant
-    	}]);
+        ee.emitEvent('participant-evicted', [{
+            localParticipant: localParticipant
+        }]);
     };
-    
+
     this.onNewMessage = function (msg) {
         console.log("New message: " + JSON.stringify(msg));
         var room = msg.room;
@@ -171,69 +171,69 @@ function Room(kurento, options) {
 
         if (user !== undefined) {
             ee.emitEvent('newMessage', [{
-                    room: room,
-                    user: user,
-                    message: message
-                }]);
+                room: room,
+                user: user,
+                message: message
+            }]);
         } else {
             console.error("User undefined in new message:", msg);
         }
     }
-    
+
     this.recvIceCandidate = function (msg) {
-    	var candidate = {
-    			candidate: msg.candidate,
-    			sdpMid: msg.sdpMid,
-    			sdpMLineIndex: msg.sdpMLineIndex
-    	}
-    	var participant = participants[msg.endpointName];
-    	if (!participant) {
-    		console.error("Participant not found for endpoint " + 
-    				msg.endpointName + ". Ice candidate will be ignored.", 
-    				candidate);
-    		return false;
-    	}
-    	var streams = participant.getStreams();
-    	for (var key in streams) {
-        	var stream = streams[key];
-    		stream.getWebRtcPeer().addIceCandidate(candidate, function (error) {
-    			if (error) {
-    				console.error("Error adding candidate for " + key 
-    						+ " stream of endpoint " + msg.endpointName 
-    						+ ": " + error);
-    				return;
-    			}
-    		});
+        var candidate = {
+            candidate: msg.candidate,
+            sdpMid: msg.sdpMid,
+            sdpMLineIndex: msg.sdpMLineIndex
+        }
+        var participant = participants[msg.endpointName];
+        if (!participant) {
+            console.error("Participant not found for endpoint " +
+                msg.endpointName + ". Ice candidate will be ignored.",
+                candidate);
+            return false;
+        }
+        var streams = participant.getStreams();
+        for (var key in streams) {
+            var stream = streams[key];
+            stream.getWebRtcPeer().addIceCandidate(candidate, function (error) {
+                if (error) {
+                    console.error("Error adding candidate for " + key
+                        + " stream of endpoint " + msg.endpointName
+                        + ": " + error);
+                    return;
+                }
+            });
         }
     }
-    
+
     this.onRoomClosed = function (msg) {
-    	console.log("Room closed: " + JSON.stringify(msg));
+        console.log("Room closed: " + JSON.stringify(msg));
         var room = msg.room;
         if (room !== undefined) {
-        	 ee.emitEvent('room-closed', [{
-                 room: room
-        	 }]);
+            ee.emitEvent('room-closed', [{
+                room: room
+            }]);
         } else {
-        	console.error("Room undefined in on room closed", msg);
+            console.error("Room undefined in on room closed", msg);
         }
     }
-    
-    this.onMediaError = function(params) {
-    	console.error("Media error: " + JSON.stringify(params));
-    	var error = params.error;
-    	if (error) {
-    		ee.emitEvent('error-media', [{
-    			error: error
-    		}]);
-    	} else {
-    		console.error("Received undefined media error. Params:", params);
-    	}
-	}
-    
+
+    this.onMediaError = function (params) {
+        console.error("Media error: " + JSON.stringify(params));
+        var error = params.error;
+        if (error) {
+            ee.emitEvent('error-media', [{
+                error: error
+            }]);
+        } else {
+            console.error("Received undefined media error. Params:", params);
+        }
+    }
+
     this.leave = function (forced) {
-    	forced = !!forced;
-    	console.log("Leaving room (forced=" + forced + ")");
+        forced = !!forced;
+        console.log("Leaving room (forced=" + forced + ")");
         if (connected && !forced) {
             kurento.sendRequest('leaveRoom', function (error, response) {
                 if (error) {
@@ -248,42 +248,42 @@ function Room(kurento, options) {
             participants[key].dispose();
         }
     }
-    
+
     this.disconnect = function (stream) {
-    	var participant = stream.getParticipant();
-    	if (!participant) {
-    		console.error("Stream to disconnect has no participant", stream);
-    		return false;
-    	}
-    	
-    	delete participants[participant.getID()];
-    	participant.dispose();
-    	
-    	if (participant === localParticipant) {
-    		console.log("Unpublishing my media (I'm " + participant.getID() + ")");
-    		delete localParticipant;
-    		kurento.sendRequest('unpublishVideo', function (error, response) {
+        var participant = stream.getParticipant();
+        if (!participant) {
+            console.error("Stream to disconnect has no participant", stream);
+            return false;
+        }
+
+        delete participants[participant.getID()];
+        participant.dispose();
+
+        if (participant === localParticipant) {
+            console.log("Unpublishing my media (I'm " + participant.getID() + ")");
+            delete localParticipant;
+            kurento.sendRequest('unpublishVideo', function (error, response) {
                 if (error) {
                     console.error(error);
                 } else {
-                	console.info("Media unpublished correctly");
+                    console.info("Media unpublished correctly");
                 }
             });
-    	} else {
-    		console.log("Unsubscribing from " + stream.getGlobalID());
-    		kurento.sendRequest('unsubscribeFromVideo', {
-    				sender: stream.getGlobalID()
-    			}, 
-    			function (error, response) {
-    				if (error) {
-    					console.error(error);
-    				} else {
-    					console.info("Unsubscribed correctly from " + stream.getGlobalID());
-    				}
-    			});
-    	}
+        } else {
+            console.log("Unsubscribing from " + stream.getGlobalID());
+            kurento.sendRequest('unsubscribeFromVideo', {
+                    sender: stream.getGlobalID()
+                },
+                function (error, response) {
+                    if (error) {
+                        console.error(error);
+                    } else {
+                        console.info("Unsubscribed correctly from " + stream.getGlobalID());
+                    }
+                });
+        }
     }
-    
+
     this.getStreams = function () {
         return streams;
     }
@@ -304,19 +304,19 @@ function Participant(kurento, local, room, options) {
 
     if (options.streams) {
         for (var i = 0; i < options.streams.length; i++) {
-        	var streamOpts = {
-    			id: options.streams[i].id,
+            var streamOpts = {
+                id: options.streams[i].id,
                 participant: that,
                 recvVideo: (options.streams[i].recvVideo == undefined ? true : options.streams[i].recvVideo),
                 recvAudio: (options.streams[i].recvAudio == undefined ? true : options.streams[i].recvAudio)
-        	}
+            }
             var stream = new Stream(kurento, false, room, streamOpts);
             addStream(stream);
             streamsOpts.push(streamOpts);
         }
     }
-    console.log("New " + (local ? "local " : "remote ") + "participant " + id 
-    		+ ", streams opts: ", streamsOpts);
+    console.log("New " + (local ? "local " : "remote ") + "participant " + id
+        + ", streams opts: ", streamsOpts);
 
     that.setId = function (newId) {
         id = newId;
@@ -342,22 +342,22 @@ function Participant(kurento, local, room, options) {
     that.getID = function () {
         return id;
     }
-    
-	this.sendIceCandidate = function (candidate) {
-		console.debug((local ? "Local" : "Remote"), "candidate for", 
-				that.getID(), JSON.stringify(candidate));
-		kurento.sendRequest("onIceCandidate", {
-			endpointName: that.getID(),
-	        candidate: candidate.candidate,
-	        sdpMid: candidate.sdpMid,
-	      	sdpMLineIndex: candidate.sdpMLineIndex
-	    }, function (error, response) {
-	    	if (error) {
-	    		console.error("Error sending ICE candidate: "
-	    				+ JSON.stringify(error));
-	    	}
-	    });
-	}
+
+    this.sendIceCandidate = function (candidate) {
+        console.debug((local ? "Local" : "Remote"), "candidate for",
+            that.getID(), JSON.stringify(candidate));
+        kurento.sendRequest("onIceCandidate", {
+            endpointName: that.getID(),
+            candidate: candidate.candidate,
+            sdpMid: candidate.sdpMid,
+            sdpMLineIndex: candidate.sdpMLineIndex
+        }, function (error, response) {
+            if (error) {
+                console.error("Error sending ICE candidate: "
+                    + JSON.stringify(error));
+            }
+        });
+    }
 }
 
 // Stream --------------------------------
@@ -393,33 +393,33 @@ function Stream(kurento, local, room, options) {
 
     var recvVideo = options.recvVideo;
     this.getRecvVideo = function () {
-    	return recvVideo;
+        return recvVideo;
     }
-    
+
     var recvAudio = options.recvAudio;
     this.getRecvAudio = function () {
-    	return recvAudio;
+        return recvAudio;
     }
-    
+
     var showMyRemote = false;
     this.subscribeToMyRemote = function () {
-    	showMyRemote = true;
+        showMyRemote = true;
     }
     this.displayMyRemote = function () {
-    	return showMyRemote;
+        return showMyRemote;
     }
 
     var localMirrored = false;
     this.mirrorLocalStream = function (wr) {
-    	showMyRemote = true;
-    	localMirrored = true;
-    	if (wr)
-    		wrStream = wr;
+        showMyRemote = true;
+        localMirrored = true;
+        if (wr)
+            wrStream = wr;
     }
     this.isLocalMirrored = function () {
-    	return localMirrored;
+        return localMirrored;
     }
-    
+
     this.getWrStream = function () {
         return wrStream;
     }
@@ -440,7 +440,7 @@ function Stream(kurento, local, room, options) {
     }
 
     function hideSpinner(spinnerId) {
-    	spinnerId = (typeof spinnerId === 'undefined') ? that.getGlobalID() : spinnerId;
+        spinnerId = (typeof spinnerId === 'undefined') ? that.getGlobalID() : spinnerId;
         $(jq('progress-' + spinnerId)).hide();
     }
 
@@ -451,25 +451,25 @@ function Stream(kurento, local, room, options) {
         video.autoplay = true;
         video.controls = false;
         if (wrStream) {
-        	video.src = URL.createObjectURL(wrStream);
-        	$(jq(thumbnailId)).show();
+            video.src = URL.createObjectURL(wrStream);
+            $(jq(thumbnailId)).show();
             hideSpinner();
         } else
-        	console.log("No wrStream yet for", that.getGlobalID());
+            console.log("No wrStream yet for", that.getGlobalID());
 
         videoElements.push({
-        	thumb: thumbnailId,
-        	video: video
+            thumb: thumbnailId,
+            video: video
         });
 
         if (local) {
-        	video.muted = true;
+            video.muted = true;
         }
 
         if (typeof parentElement === "string") {
             document.getElementById(parentElement).appendChild(video);
         } else {
-        	parentElement.appendChild(video);
+            parentElement.appendChild(video);
         }
     }
 
@@ -497,10 +497,10 @@ function Stream(kurento, local, room, options) {
         return id;
     }
 
-    this.getParticipant = function() {
-		return participant;
-	}
-    
+    this.getParticipant = function () {
+        return participant;
+    }
+
     this.getGlobalID = function () {
         if (participant) {
             return participant.getID() + "_" + id;
@@ -518,12 +518,12 @@ function Stream(kurento, local, room, options) {
                     maxWidth: 640
                 },
                 optional: [
-                           {maxFrameRate: 15}, 
-                           {minFrameRate: 15}
-                           ]
+                    {maxFrameRate: 15},
+                    {minFrameRate: 15}
+                ]
             }
         };
-        
+
         getUserMedia(constraints, function (userStream) {
             wrStream = userStream;
             ee.emitEvent('access-accepted', null);
@@ -534,34 +534,34 @@ function Stream(kurento, local, room, options) {
     }
 
     this.publishVideoCallback = function (error, sdpOfferParam, wp) {
-    	if (error) {
-    		return console.error("(publish) SDP offer error: " 
-    				+ JSON.stringify(error));
-    	}
-    	console.log("Sending SDP offer to publish as " 
-    			+ that.getGlobalID(), sdpOfferParam);
-        kurento.sendRequest("publishVideo", { 
-        	sdpOffer: sdpOfferParam, 
-        	doLoopback: that.displayMyRemote() || false 
+        if (error) {
+            return console.error("(publish) SDP offer error: "
+                + JSON.stringify(error));
+        }
+        console.log("Sending SDP offer to publish as "
+            + that.getGlobalID(), sdpOfferParam);
+        kurento.sendRequest("publishVideo", {
+            sdpOffer: sdpOfferParam,
+            doLoopback: that.displayMyRemote() || false
         }, function (error, response) {
-        		if (error) {
-	                console.error("Error on publishVideo: " + JSON.stringify(error));
-	            } else {
-	            	that.room.emitEvent('stream-published', [{
-	                    stream: that
-	                }])
-	                that.processSdpAnswer(response.sdpAnswer);
-	            }
+            if (error) {
+                console.error("Error on publishVideo: " + JSON.stringify(error));
+            } else {
+                that.room.emitEvent('stream-published', [{
+                    stream: that
+                }])
+                that.processSdpAnswer(response.sdpAnswer);
+            }
         });
     }
-    
+
     this.startVideoCallback = function (error, sdpOfferParam, wp) {
-    	if (error) {
-    		return console.error("(subscribe) SDP offer error: " 
-    				+ JSON.stringify(error));
-    	}
-    	console.log("Sending SDP offer to subscribe to " 
-    			+ that.getGlobalID(), sdpOfferParam);
+        if (error) {
+            return console.error("(subscribe) SDP offer error: "
+                + JSON.stringify(error));
+        }
+        console.log("Sending SDP offer to subscribe to "
+            + that.getGlobalID(), sdpOfferParam);
         kurento.sendRequest("receiveVideoFrom", {
             sender: that.getGlobalID(),
             sdpOffer: sdpOfferParam
@@ -573,50 +573,50 @@ function Stream(kurento, local, room, options) {
             }
         });
     }
-    
+
     function initWebRtcPeer(sdpOfferCallback) {
         if (local) {
-        	 var options = {
-        			videoStream: wrStream,
-             		onicecandidate: participant.sendIceCandidate.bind(participant)
-             }
-        	if (that.displayMyRemote()) {
-        		wp = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function (error) {
-                	if(error) {
-                		return console.error(error);
-                	}
-                	this.generateOffer(sdpOfferCallback.bind(that));
-                });
-        	} else {
-        		wp = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options, function (error) {
-                	if(error) {
-                		return console.error(error);
-                	}
-                	this.generateOffer(sdpOfferCallback.bind(that));
-                });
-        	}        	
-        } else {
-        	var offerConstraints = {
-        			mandatory : {
-                        OfferToReceiveVideo: recvVideo,
-                        OfferToReceiveAudio: recvAudio
-        			}
-                };
-        	console.log("Constraints of generate SDP offer (subscribing)", 
-        			offerConstraints);
-        	var options = {
-        		onicecandidate: participant.sendIceCandidate.bind(participant),
-        		connectionConstraints: offerConstraints
+            var options = {
+                videoStream: wrStream,
+                onicecandidate: participant.sendIceCandidate.bind(participant)
             }
-        	wp = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options, function (error) {
-            	if(error) {
-            		return console.error(error);
-            	}
-            	this.generateOffer(sdpOfferCallback.bind(that));
+            if (that.displayMyRemote()) {
+                wp = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options, function (error) {
+                    if (error) {
+                        return console.error(error);
+                    }
+                    this.generateOffer(sdpOfferCallback.bind(that));
+                });
+            } else {
+                wp = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options, function (error) {
+                    if (error) {
+                        return console.error(error);
+                    }
+                    this.generateOffer(sdpOfferCallback.bind(that));
+                });
+            }
+        } else {
+            var offerConstraints = {
+                mandatory: {
+                    OfferToReceiveVideo: recvVideo,
+                    OfferToReceiveAudio: recvAudio
+                }
+            };
+            console.log("Constraints of generate SDP offer (subscribing)",
+                offerConstraints);
+            var options = {
+                onicecandidate: participant.sendIceCandidate.bind(participant),
+                connectionConstraints: offerConstraints
+            }
+            wp = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options, function (error) {
+                if (error) {
+                    return console.error(error);
+                }
+                this.generateOffer(sdpOfferCallback.bind(that));
             });
         }
-        console.log("Waiting for SDP offer to be generated (" 
-        		+ (local ? "local" : "remote") + " peer: " + that.getGlobalID() + ")");
+        console.log("Waiting for SDP offer to be generated ("
+            + (local ? "local" : "remote") + " peer: " + that.getGlobalID() + ")");
     }
 
     this.publish = function () {
@@ -645,54 +645,54 @@ function Stream(kurento, local, room, options) {
             type: 'answer',
             sdp: sdpAnswer,
         });
-        console.log(that.getGlobalID() + ": set peer connection with recvd SDP answer", 
-        		sdpAnswer);
+        console.log(that.getGlobalID() + ": set peer connection with recvd SDP answer",
+            sdpAnswer);
         var pc = wp.peerConnection;
         pc.setRemoteDescription(answer, function () {
             // Avoids to subscribe to your own stream remotely 
-        	// except when showMyRemote is true
+            // except when showMyRemote is true
             if (!local || that.displayMyRemote()) {
                 wrStream = pc.getRemoteStreams()[0];
                 console.log("Peer remote stream", wrStream);
                 for (i = 0; i < videoElements.length; i++) {
-                	var thumbnailId = videoElements[i].thumb;
-                	var video = videoElements[i].video;
-                	video.src = URL.createObjectURL(wrStream);
-                	video.onplay = function() {
-                    	//is ('native-video-' + that.getGlobalID())
-                    	var elementId = this.id;
+                    var thumbnailId = videoElements[i].thumb;
+                    var video = videoElements[i].video;
+                    video.src = URL.createObjectURL(wrStream);
+                    video.onplay = function () {
+                        //is ('native-video-' + that.getGlobalID())
+                        var elementId = this.id;
                         var videoId = elementId.split("-");
                         $(jq(thumbnailId)).show();
                         hideSpinner(videoId[2]);
                     };
                 }
                 that.room.emitEvent('stream-subscribed', [{
-                        stream: that
-                    }]);
+                    stream: that
+                }]);
             }
         }, function (error) {
             console.error(that.getGlobalID() + ": Error setting SDP to the peer connection: "
-            		+ JSON.stringify(error));
+                + JSON.stringify(error));
         });
     }
 
     this.unpublish = function () {
-    	if (wp) {
-        	wp.dispose();
-        } else { 
-        	if (wrStream) {
-	        	wrStream.getAudioTracks().forEach(function (track) {
-	                track.stop && track.stop()
-	            })
-	            wrStream.getVideoTracks().forEach(function (track) {
-	                track.stop && track.stop()
-	            })
-        	}
+        if (wp) {
+            wp.dispose();
+        } else {
+            if (wrStream) {
+                wrStream.getAudioTracks().forEach(function (track) {
+                    track.stop && track.stop()
+                })
+                wrStream.getVideoTracks().forEach(function (track) {
+                    track.stop && track.stop()
+                })
+            }
         }
-    	
-    	console.log(that.getGlobalID() + ": Stream '" + id + "' unpublished");
+
+        console.log(that.getGlobalID() + ": Stream '" + id + "' unpublished");
     }
-    
+
     this.dispose = function () {
 
         function disposeElement(element) {
@@ -708,18 +708,18 @@ function Stream(kurento, local, room, options) {
         for (i = 0; i < videoElements.length; i++) {
             disposeElement(videoElements[i].video);
         }
-        
+
         if (wp) {
-        	wp.dispose();
-        } else { 
-        	if (wrStream) {
-	        	wrStream.getAudioTracks().forEach(function (track) {
-	                track.stop && track.stop()
-	            })
-	            wrStream.getVideoTracks().forEach(function (track) {
-	                track.stop && track.stop()
-	            })
-        	}
+            wp.dispose();
+        } else {
+            if (wrStream) {
+                wrStream.getAudioTracks().forEach(function (track) {
+                    track.stop && track.stop()
+                })
+                wrStream.getVideoTracks().forEach(function (track) {
+                    track.stop && track.stop()
+                })
+            }
         }
 
         console.log(that.getGlobalID() + ": Stream '" + id + "' disposed");
@@ -754,8 +754,7 @@ function KurentoRoom(wsUri, callback) {
     var options = {
         request_timeout: 50000
     };
-    var rpc = new RpcBuilder(RpcBuilder.packers.JsonRPC, options, ws, function (
-            request) {
+    var rpc = new RpcBuilder(RpcBuilder.packers.JsonRPC, options, ws, function (request) {
         console.info('Received request: ' + JSON.stringify(request));
 
         switch (request.method) {
@@ -766,9 +765,9 @@ function KurentoRoom(wsUri, callback) {
                 onParticipantPublished(request.params);
                 break;
             case 'participantUnpublished':
-            	//TODO use a different method, don't delete 
-            	// the participant for future reconnection?
-            	onParticipantLeft(request.params);
+                //TODO use a different method, don't delete
+                // the participant for future reconnection?
+                onParticipantLeft(request.params);
                 break;
             case 'participantLeft':
                 onParticipantLeft(request.params);
@@ -783,15 +782,15 @@ function KurentoRoom(wsUri, callback) {
                 iceCandidateEvent(request.params);
                 break;
             case 'roomClosed':
-            	onRoomClosed(request.params);
-            	break;
+                onRoomClosed(request.params);
+                break;
             case 'mediaError':
-            	onMediaError(request.params);
-            	break;
+                onMediaError(request.params);
+                break;
             default:
                 console.error('Unrecognized request: ' + JSON.stringify(request));
         }
-        ;
+
     });
 
     function onParticipantJoined(msg) {
@@ -845,20 +844,20 @@ function KurentoRoom(wsUri, callback) {
     var rpcParams;
 
     this.setRpcParams = function (params) {
-    	rpcParams = params;
+        rpcParams = params;
     }
 
     this.sendRequest = function (method, params, callback) {
-    	if (rpcParams && rpcParams !== "null" && rpcParams !== "undefined") {
-    		for(var index in rpcParams) {
-    			if (rpcParams.hasOwnProperty(index)) {
-    				params[index] = rpcParams[index];
-    			}
-    		}
-    	}
+        if (rpcParams && rpcParams !== "null" && rpcParams !== "undefined") {
+            for (var index in rpcParams) {
+                if (rpcParams.hasOwnProperty(index)) {
+                    params[index] = rpcParams[index];
+                }
+            }
+        }
         rpc.encode(method, params, callback);
         console.log('Sent request: { method:"' + method + '", params: '
-                + JSON.stringify(params) + ' }');
+            + JSON.stringify(params) + ' }');
     };
 
     this.close = function (forced) {
@@ -868,12 +867,12 @@ function KurentoRoom(wsUri, callback) {
         ws.close();
     };
 
-    this.disconnectParticipant = function(stream) {
-    	if (room !== undefined) {
-    		room.disconnect(stream);
-    	}
-	}
-    
+    this.disconnectParticipant = function (stream) {
+        if (room !== undefined) {
+            room.disconnect(stream);
+        }
+    }
+
     this.Stream = function (room, options) {
         options.participant = room.getLocalParticipant();
         return new Stream(that, true, room, options);
@@ -890,7 +889,11 @@ function KurentoRoom(wsUri, callback) {
     //CHAT
     this.sendMessage = function (room, user, message) {
 
-        this.sendRequest('sendMessage', {message: message, userMessage: user, roomMessage: room}, function (error, response) {
+        this.sendRequest('sendMessage', {
+            message: message,
+            userMessage: user,
+            roomMessage: room
+        }, function (error, response) {
             if (error) {
                 console.error(error);
             } else {
@@ -898,9 +901,9 @@ function KurentoRoom(wsUri, callback) {
             }
         });
     };
-    
+
     this.sendCustomRequest = function (params, callback) {
         this.sendRequest('customRequest', params, callback);
-    };    
+    };
 
 }

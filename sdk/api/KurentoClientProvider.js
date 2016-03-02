@@ -10,7 +10,7 @@ function KurentoClientProvider() {
  *
  * @param sessionInfo {KurentoClientSessionInfo}
  */
-KurentoClientProvider.getKurentoClient = function (sessionInfo) {
+KurentoClientProvider.getKurentoClient = function (sessionInfo, callback) {
 }
 
 KurentoClientProvider.destroyWhenUnused = function () {

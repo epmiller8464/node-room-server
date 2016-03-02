@@ -57,7 +57,7 @@ var WebRtcTestClient = (function () {
     });
 
     $('#viewer_' + self.clientId).click(function(){
-
+      //self.ws = new WebSocket('ws://' + location.host + '/r');
       if (!self.webRtcPeer) {
         showSpinner(self.video);
 
@@ -96,7 +96,7 @@ var WebRtcTestClient = (function () {
       }
     });
 
-    self.ws = new WebSocket('ws://' + location.host + '/call');
+    self.ws = new WebSocket('ws://' + location.host + '/r');
 
     self.ws.onmessage = function (message) {
       var parsedMessage = JSON.parse(message.data);

@@ -11,101 +11,77 @@ var logger = new Console(process.stdout, process.stderr);
 //logger.log('count: %d', count);
 // in stdout.log: count 5
 var EventEmitter = require('events');
-
-
 var util = require('util')
 var inherits = require('inherits');
 var kurento = require('kurento-client');
 var should = require('should');
 var assert = require('assert');
-var KCSessionInfo = require('./sdk/internal/KurentoClientSessionInfo')
-var Room = require('./sdk/internal/Room')
-var RoomManager = require('./sdk/RoomManager')
-var JsonRpcNotificationService = require('./rpc/JsonRpcNotificationService')
-var NotificationRoomHandler = require('./sdk/internal/NotificationRoomHandler')
+var RoomJsonRpcHandler = require('./RoomJsonRpcHandler')
 var NotificationRoomManager = require('./sdk/NotificationRoomManager')
-var UserParticipant = require('./sdk/api/poco/UserParticipant')
-var ParticipantRequest = require('./sdk/api/poco/ParticipantRequest')
-var FixedOneKmsManager = require('./kms/FixedOneKmsManager')
 var Kms = require('./kms/Kms')
+var FixedOneKmsManager = require('./kms/FixedOneKmsManager')
+var JsonRpcUserControl = require('./rpc/JsonRpcUserControl')
+var JsonRpcNotificationService = require('./rpc/JsonRpcNotificationService')
+
 var uuid = require('node-uuid')
 var c = require('chance')()
-var faker = require('faker')
-var dockerKmsHostIp = '192.168.99.100'
-var dockerKmsHostPort = '8888'
-var dockerKmsWsUri = util.format('ws://%s:%s/kurento', dockerKmsHostIp, dockerKmsHostPort)
-//var t = require('./Offer.sdp')
+//var faker = require('faker')
+var kmsHostIp = '192.168.99.100'
+var kmsHostPort = '8888'
+var kmsWsUri = util.format('ws://%s:%s/kurento', kmsHostIp, kmsHostPort)
 
-function MyEmitter() {
-    EventEmitter.call(this);
-}
-inherits(MyEmitter, EventEmitter);
+var RoomServer = require('./KurentoRoomServerApp')
+var roomServer = null
 
-const myEmitter = new MyEmitter();
-myEmitter.on('event', function (evt) {
-    logger.log('an event occurred!', evt.object);
-});
-myEmitter.emit('event', {object: 'test'});
+RoomServer({kmsWsUri: kmsWsUri}, function (_roomServer) {
 
-function go() {
-    var stream = ''
-    fs.readFile('./Offer.sdp', 'utf8', function (err, data) {
-        if (err) throw err;
-        stream = data.toString()
-        logger.log(stream);
-    })
-    //pussy
-    //let f = (x) => {
-    //    return x * 2
-    //}
-    var roomName = uuid.v4()
-    var username = c.email().split('@')[0]
-    var userNotifyService = new JsonRpcNotificationService()
-    var roomHandler = new NotificationRoomHandler(userNotifyService)
-    //logger.log(util.inspect(user))
-    kurento(dockerKmsWsUri, function (error, kurentoClient) {
-        //logger.log(util.inspect(kurentoClient.getServerManager().getName()))
-        //function () {
-        //
-        //})
-        var pid = uuid.v4()
-        var roomName = uuid.v4()
-        var requestId = faker.random.number(1024)
-        //var user = new UserParticipant(pid, username, false)
-        var kms = new FixedOneKmsManager()//dockerKmsWsUri, kurentoClient)
-        kms.addKms(new Kms(kurentoClient, dockerKmsWsUri))
+    roomServer = _roomServer
+    if (roomServer) {
+        logger.log(util.inspect(roomServer.kmsManager.getKurentoClient().sessionId))
+        //logger.log(util.inspect(roomServer))
+    }
+})
 
-        //var room = new Room(roomName, kurentoClient, roomHandler, false)
-        var rmMgr = new NotificationRoomManager(userNotifyService, kms)
-        var room = rmMgr.createRoom(new KCSessionInfo(pid, roomName))
-
-        rmMgr.joinRoom(username, roomName, true, new ParticipantRequest(pid, requestId))
-        logger.log(util.inspect(room))
-    })
-    //console.log(util.inspect(room))
-    //room.join(pid, user.getUserName(), true, function (e, publisher) {
-    //    //room.join(pid, user.getUserName(), true, (e, publisher) => {
-    //    //should(e).equal(null)
-    //    //logger.log(e, newUser)
-    //publisher.createPublishingEndpoint(function (error, result) {
-    //
-    //    logger.log(error, result)
-    //    if (error) {
-    //    }
-    //    result.processOffer(stream, function (error, answer) {
-    //
-    //        logger.log(error, answer)
-    //        if (error) throw error
-    //
-    //    })
-    //
-    //})
-    //room.createPipeline(function (e, pipeline) {
-    //    should(e).equal(null)
-    //    console.log(e, pipeline)
-    //    done()
-    //})
-    //})
-}
-
-go()
+//function MyEmitter() {
+//    EventEmitter.call(this);
+//}
+//inherits(MyEmitter, EventEmitter);
+//
+//const myEmitter = new MyEmitter();
+//myEmitter.on('event', function (evt) {
+//    logger.log('an event occurred!', evt.object);
+//});
+//myEmitter.emit('event', {object: 'test'});
+//var userNotifyService = null,
+//    handler = null,
+//    kms = null,
+//    userControl = null
+//var roomHandler = new NotificationRoomHandler(userNotifyService)
+//var pid = uuid.v4()
+//var roomName = uuid.v4()
+//var requestId = faker.random.number(1024)
+//
+//function getKurentoClient(options,callback) {
+//    var roomName = uuid.v4()
+//    var username = c.email().split('@')[0]
+//kurento(kmsWsUri, onNewClient)
+//
+//}
+//function onNewClient(error, kurentoClient) {
+//    var user = new UserParticipant(pid, username, false)
+//    kms.addKms(new Kms(kurentoClient, kmsWsUri))
+//kms = kms || new FixedOneKmsManager(kmsWsUri)
+//kms.addKms(new Kms(kurentoClient, kmsWsUri))
+//var room = rmMgr.createRoom(new KCSessionInfo(pid, roomName))
+//onKmsReady(kms)
+//rmMgr.joinRoom(username, roomName, true, new ParticipantRequest(pid, requestId))
+//logger.log(util.inspect(room))
+//}
+//function onKmsReady(kms) {
+//    userNotifyService = new JsonRpcNotificationService()
+//    var roomManager = new NotificationRoomManager(userNotifyService, kms)
+//    userControl = new JsonRpcUserControl(roomManager)
+//    handler = new RoomJsonRpcHandler(userControl, userNotifyService)
+//}
+//
+//go()

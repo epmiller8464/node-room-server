@@ -20,11 +20,11 @@
 //
 var MaxWebRtcLoadManager = require('./MaxWebRtcLoadManager')
 
-function Kms(client, kmsUri) {
+function Kms(kc, kmsUri) {
     var self = this
 
     self.loadManager = new MaxWebRtcLoadManager(50);
-    self.client = client || null
+    self.kurentoClient = kc || null
     self.kmsUri = kmsUri || null
 }
 
@@ -48,7 +48,7 @@ Kms.prototype.getUri = function () {
 
 Kms.prototype.getKurentoClient = function () {
     var self = this
-    return self.client;
+    return self.kurentoClient;
 }
 
 
